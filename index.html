@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fitts' Law Experiment</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Fitts' Law Experiment</h1>
+  <label for="feedbackMode">Retroalimentación Visual:</label>
+  <select id="feedbackMode">
+    <option value="none">Ninguna</option>
+    <option value="color">Cambio de color</option>
+    <option value="buffer">Colisión anticipada</option>
+  </select>
+  <canvas id="experimentCanvas" width="800" height="600"></canvas>
+  <button onclick="downloadCSV()">Descargar Resultados</button>
+  <script src="script.js"></script>
+</body>
+</html>
