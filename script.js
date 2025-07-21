@@ -11,7 +11,7 @@ let trialData = []; // array de todos los trials
 let currentTrialS = {
   cursorPositions: [],
   movementStartTime: null,
-  collisionTime: null,
+  reachingTime: null,
   clickDownTime: null,
   clickUpTime: null,
   success: false,
@@ -191,7 +191,7 @@ canvas.addEventListener("mousemove", (e) => {
         movementStarted = true;
     }
 
-    checkCollision(pos);
+    checkReaching(pos);
 });
 
 function drawStartButton() {
@@ -246,7 +246,7 @@ function updateFeedbackMode() {
 }
 
 
-function checkCollision(pos) {
+function checkReaching(pos) {
     const target = targets[(currentTrial + randomStart)* 5 % 9]; // Alterna entre los targets del par
     const buffer = feedbackMode === "buffer" ? 10 : 0;
     const dx = pos.x - target.x;
@@ -255,7 +255,7 @@ function checkCollision(pos) {
     if (feedbackMode !== "none") {
         if (distance < target.radius + buffer) {
             target.hit = true;
-            currentTrialS.collisionTime = pos.time;
+            currentTrialS.reachingTime = pos.time;
         }
         else {
             target.hit = false;
@@ -310,8 +310,8 @@ canvas.addEventListener("mouseup", (e) => {
   //currentTrialS.trialIndex = currentTrial;
 
   // Calcular tiempos derivados
-  currentTrialS.reactionTime = currentTrialS.collisionTime - currentTrialS.movementStartTime;
-  currentTrialS.confirmationTime = currentTrialS.clickDownTime - currentTrialS.collisionTime;
+  currentTrialS.reactionTime = currentTrialS.reachingTime - currentTrialS.movementStartTime;
+  currentTrialS.confirmationTime = currentTrialS.clickDownTime - currentTrialS.reachingTime;
   currentTrialS.clickDuration = currentTrialS.clickUpTime - currentTrialS.clickDownTime;
 
   trialData.push(currentTrialS);
@@ -321,7 +321,7 @@ canvas.addEventListener("mouseup", (e) => {
   currentTrialS = {
     cursorPositions: [],
     movementStartTime: null,
-    collisionTime: null,
+    reachingTime: null,
     clickDownTime: null,
     clickUpTime: null,
     success: false,
@@ -360,7 +360,7 @@ function showTrialData(trial) {
   const speeds = [];
   const times = [];
 
-  const positions = currentTrialS.cursorPositions;
+  const positions = trial.cursorPositions;
   for (let i = 1; i < positions.length; i++) {
     const dx = positions[i].x - positions[i - 1].x;
     const dy = positions[i].y - positions[i - 1].y;
@@ -371,17 +371,60 @@ function showTrialData(trial) {
     times.push(positions[i].time - positions[0].time);
   }
 
-  drawSpeedChart(times, speeds);
+  drawSpeedChart(times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime, trial.cursorPositions[0].time);
 }
 
 
 
-function drawSpeedChart(times, speeds) {
+function createVerticalLineAnnotation(label, color, value) {
+  return {
+    type: 'line',
+    scaleID: 'x',
+    value: value.toFixed(0),
+    borderColor: color,
+    borderWidth: 2,
+    label: {
+      content: label,
+      enabled: true,
+      position: 'top'
+    }
+  };
+}
+
+function drawSpeedChart(times, speeds, reachingTime, clickDownTime,   clickUpTime, initialTime) {
+
   const ctx = document.getElementById("velocityChart").getContext("2d");
 
   if (velocityChart) {
     velocityChart.destroy();
   }
+
+  const annotations = {};
+
+  if (reachingTime) {
+    annotations.reach = createVerticalLineAnnotation(
+      "Reach",
+      "orange",
+      reachingTime - initialTime
+    );
+  }
+  
+  if (clickDownTime) {
+    annotations.clickDown = createVerticalLineAnnotation(
+      "MouseDown",
+      "blue",
+      clickDownTime - initialTime
+    );
+}
+
+if (clickUpTime) {
+  annotations.clickUp = createVerticalLineAnnotation(
+    "MouseUp",
+    "red",
+    clickUpTime - initialTime
+  );
+}
+
 
   velocityChart = new Chart(ctx, {
     type: "line",
@@ -399,7 +442,10 @@ function drawSpeedChart(times, speeds) {
     options: {
       responsive: false,
       plugins: {
-        legend: { display: true }
+        legend: { display: true },
+        annotation: {
+          annotations
+        }
       },
       scales: {
         x: {
@@ -409,7 +455,8 @@ function drawSpeedChart(times, speeds) {
           title: { display: true, text: "Velocidad (px/s)" }
         }
       }
-    }
+    },
+    plugins: [Chart.registry.getPlugin('annotation')]
   });
 }
 
