@@ -6,6 +6,9 @@ const widths = [30, 60];       // diámetro del target
 const trialsPerCombination = 9;
 
 
+let trackingInterval = null;
+let currentMousePosition = { x: 0, y: 0 };
+
 let trialData = []; // array de todos los trials
 
 let currentTrialS = {
@@ -29,14 +32,12 @@ let trackingStartTime = null;
 let blocks = [];      // Cada bloque es una combinación A-W con T trials
 let currentBlock = 0;
 let currentTrial = 0;
-let currentPair = []; // los dos targets alternantes
 
 let randomStart = 0;
 let isExperimentStarted = false;
 let feedbackMode = "none";
 let targets = [];
 let results = [];
-let currentTargetIndex = 0;
 let mousePositions = [];
 let movementStartTime = null;
 let data = [];
@@ -97,7 +98,6 @@ function shuffleArray(array) {
 
 function generateRingTargets(A, W) {
   const N = 9;
-  const radius = A / 2;
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const angleStep = (2 * Math.PI) / N;
@@ -122,8 +122,6 @@ function generateRingTargets(A, W) {
   }
 
   // Empezar alternancia en 0 y 5 (opuestos)
-  currentPair = [0, N / 2];
-  currentTargetIndex = 0; // índice del currentPair (0 o 1)
 }
 
 function nextTrial() {
@@ -140,8 +138,22 @@ function nextTrial() {
   }
 
   const { A, W } = blocks[currentBlock];
+  //stopCursorTracking();
+
+
+
+
   generateRingTargets(A, W);
   draw();
+
+
+  const now = performance.now();
+
+  currentTrialS.movementStartTime = now;
+  trackingStartTime = now;
+  movementStarted = true;
+
+  //startCursorTracking();
 }
 
 function handleClickOnTarget(x, y) {
@@ -154,7 +166,7 @@ function handleClickOnTarget(x, y) {
   const success = distance <= activeTarget.radius;
   results.push({
     success,
-    target: currentPair[currentTargetIndex],
+    target: (currentTrial + randomStart) * 5 % 9,
     block: currentBlock,
     trial: currentTrial,
     A: blocks[currentBlock].A,
@@ -166,11 +178,9 @@ function handleClickOnTarget(x, y) {
 
   // Alternar al siguiente target del par (0 -> 1, 1 -> 0)
   
-  currentTargetIndex = 1 - currentTargetIndex;
 
-  nextTrial();
+  //nextTrial();
 }
-
 
 
 
@@ -194,6 +204,71 @@ canvas.addEventListener("mousemove", (e) => {
     checkReaching(pos);
 });
 
+/*
+canvas.addEventListener("mousemove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  currentMousePosition = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  };
+});*/
+
+function startCursorTracking() {
+  const now = performance.now();
+
+  currentTrialS.movementStartTime = now;
+  trackingStartTime = now;
+  movementStarted = true;
+
+  trackingInterval = setInterval(() => {
+    const time = performance.now();
+
+    // Limita el tiempo de muestreo a 4 segundos
+    if (time - trackingStartTime > 4000) {
+      stopCursorTracking();
+      return;
+    }
+
+    const pos = {
+      x: currentMousePosition.x,
+      y: currentMousePosition.y,
+      time
+    };
+
+    currentTrialS.cursorPositions.push(pos);
+    checkReaching(pos);
+  }, 1); // cada 10 ms
+}
+
+
+function checkReaching(pos) {
+    const target = targets[(currentTrial + randomStart)* 5 % 9]; // Alterna entre los targets del par
+    const buffer = feedbackMode === "buffer" ? 10 : 0;
+    const dx = pos.x - target.x;
+    const dy = pos.y - target.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+  
+    
+    if (distance < target.radius + buffer) {
+        target.hit = true;
+        if(!currentTrialS.reachingTime) currentTrialS.reachingTime = pos.time;
+    }
+    else {
+        target.hit = false;
+    }
+    draw();
+}
+
+
+function stopCursorTracking() {
+  if (trackingInterval) {
+    clearInterval(trackingInterval);
+    trackingInterval = null;
+  }
+}
+
+
+
 function drawStartButton() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.beginPath();
@@ -213,17 +288,7 @@ function isInsideCircle(x, y, circle) {
   return Math.sqrt(dx * dx + dy * dy) <= circle.radius;
 }
 
-function generateTargets() {
-  currentTargetIndex = 0;
-  targets = [
-    { x: 150, y: 300, radius: 30 },
-    { x: 650, y: 300, radius: 30 },
-    { x: 150, y: 300, radius: 50 },
-    { x: 650, y: 300, radius: 50 },
-    // Puedes agregar más combinaciones A/W aquí
-  ];
-  draw();
-}
+
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -245,24 +310,6 @@ function updateFeedbackMode() {
   }
 }
 
-
-function checkReaching(pos) {
-    const target = targets[(currentTrial + randomStart)* 5 % 9]; // Alterna entre los targets del par
-    const buffer = feedbackMode === "buffer" ? 10 : 0;
-    const dx = pos.x - target.x;
-    const dy = pos.y - target.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    if (feedbackMode !== "none") {
-        if (distance < target.radius + buffer) {
-            target.hit = true;
-            currentTrialS.reachingTime = pos.time;
-        }
-        else {
-            target.hit = false;
-        }
-        draw();
-    }
-}
 
 function endExperiment() {
   isExperimentStarted = false;
@@ -286,6 +333,7 @@ function startExperiment() {
     const { A, W } = blocks[0];
     generateRingTargets(A, W);
     draw();
+    //startCursorTracking();  
 }
 
 canvas.addEventListener("mousedown", (e) => {
@@ -298,10 +346,12 @@ canvas.addEventListener("mouseup", (e) => {
 
   currentTrialS.clickUpTime = performance.now();
 
-  const dx = e.offsetX - targets[currentPair[currentTargetIndex]].x;
-  const dy = e.offsetY - targets[currentPair[currentTargetIndex]].y;
+  //const dx = e.offsetX - targets[currentPair[currentTargetIndex]].x;
+  //const dy = e.offsetY - targets[currentPair[currentTargetIndex]].y;
+  const dx = e.offsetX - targets[(currentTrial + randomStart) * 5 % 9].x;
+  const dy = e.offsetY - targets[(currentTrial + randomStart) * 5 % 9].y;
   const distance = Math.sqrt(dx * dx + dy * dy);
-  currentTrialS.success = distance <= targets[currentPair[currentTargetIndex]].radius;
+  currentTrialS.success = distance <= targets[(currentTrial + randomStart) * 5 % 9].radius;
 
   const block = blocks[currentBlock];
   currentTrialS.A = block.A;
@@ -309,12 +359,14 @@ canvas.addEventListener("mouseup", (e) => {
   currentTrialS.ID = Math.log2((2 * block.A) / block.W);
   //currentTrialS.trialIndex = currentTrial;
 
-  // Calcular tiempos derivados
-  currentTrialS.reactionTime = currentTrialS.reachingTime - currentTrialS.movementStartTime;
-  currentTrialS.confirmationTime = currentTrialS.clickDownTime - currentTrialS.reachingTime;
-  currentTrialS.clickDuration = currentTrialS.clickUpTime - currentTrialS.clickDownTime;
+  currentTrialS.clickUpTime = currentTrialS.clickUpTime - currentTrialS.movementStartTime;
+  currentTrialS.clickDownTime = currentTrialS.clickDownTime - currentTrialS.movementStartTime;
+  if (currentTrialS.reachingTime) {
+    currentTrialS.reachingTime = currentTrialS.reachingTime - currentTrialS.movementStartTime;
+  }
+  currentTrialS.confirmationTime = currentTrialS.clickUpTime;
 
-  trialData.push(currentTrialS);
+  
   showTrialData(currentTrialS);
 
   // Reiniciar estado para siguiente trial
@@ -333,9 +385,12 @@ canvas.addEventListener("mouseup", (e) => {
   movementStarted = false;
 
   // Alternar target y avanzar
-  currentTargetIndex = 1 - currentTargetIndex;
+  
 
-  //nextTrial();
+  nextTrial();
+  
+  
+
 
 
 });
@@ -343,13 +398,13 @@ canvas.addEventListener("mouseup", (e) => {
 
 function showTrialData(trial) {
   const infoEl = document.getElementById("trialInfo");
-
+  
   // Mostrar tiempos en números
   const lines = [
     `A: ${currentTrialS.A}`,
     `W: ${currentTrialS.W}`,
     `ID: ${currentTrialS.ID.toFixed(2)}`,
-    `Reaction Time: ${currentTrialS.reactionTime?.toFixed(2)} ms`,
+    `Reaching Time: ${currentTrialS.reachingTime?.toFixed(2)} ms`,
     `Confirmation Time: ${currentTrialS.confirmationTime?.toFixed(2)} ms`,
     `Click Duration: ${currentTrialS.clickDuration?.toFixed(2)} ms`,
     `Success: ${currentTrialS.success ? "✔️" : "❌"}`
@@ -371,7 +426,7 @@ function showTrialData(trial) {
     times.push(positions[i].time - positions[0].time);
   }
 
-  drawSpeedChart(times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime, trial.cursorPositions[0].time);
+  drawSpeedChart(times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime);
 }
 
 
@@ -391,7 +446,7 @@ function createVerticalLineAnnotation(label, color, value) {
   };
 }
 
-function drawSpeedChart(times, speeds, reachingTime, clickDownTime,   clickUpTime, initialTime) {
+function drawSpeedChart(times, speeds, reachingTime, clickDownTime, clickUpTime) {
 
   const ctx = document.getElementById("velocityChart").getContext("2d");
 
@@ -405,7 +460,7 @@ function drawSpeedChart(times, speeds, reachingTime, clickDownTime,   clickUpTim
     annotations.reach = createVerticalLineAnnotation(
       "Reach",
       "orange",
-      reachingTime - initialTime
+      reachingTime 
     );
   }
   
@@ -413,7 +468,7 @@ function drawSpeedChart(times, speeds, reachingTime, clickDownTime,   clickUpTim
     annotations.clickDown = createVerticalLineAnnotation(
       "MouseDown",
       "blue",
-      clickDownTime - initialTime
+      clickDownTime 
     );
 }
 
@@ -421,7 +476,7 @@ if (clickUpTime) {
   annotations.clickUp = createVerticalLineAnnotation(
     "MouseUp",
     "red",
-    clickUpTime - initialTime
+    clickUpTime 
   );
 }
 
@@ -432,7 +487,7 @@ if (clickUpTime) {
       labels: times.map(t => t.toFixed(0)),
       datasets: [{
         label: "Velocidad (px/s)",
-        data: speeds,
+        data: times.map((t, i) => ({ x: t, y: speeds[i] })), // <-- usa objetos {x, y}
         fill: false,
         borderColor: "blue",
         pointRadius: 1,
@@ -449,6 +504,7 @@ if (clickUpTime) {
       },
       scales: {
         x: {
+          type: 'linear', // <-- importante!
           title: { display: true, text: "Tiempo (ms)" }
         },
         y: {
