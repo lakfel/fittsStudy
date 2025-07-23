@@ -38,7 +38,6 @@ let isExperimentStarted = false;
 let feedbackMode = "none";
 let targets = [];
 let results = [];
-let mousePositions = [];
 let movementStartTime = null;
 let data = [];
 
@@ -190,7 +189,6 @@ canvas.addEventListener("mousemove", (e) => {
     const now = performance.now();
     if (trackingStartTime && now - trackingStartTime > 4000) return;
     const pos = { x: e.offsetX, y: e.offsetY, time: now };
-    mousePositions.push(pos);
 
     currentTrialS.cursorPositions.push(pos);
 
@@ -326,7 +324,6 @@ function startExperiment() {
     isExperimentStarted = true;
     results = [];
     data = [];
-    mousePositions = [];
     currentBlock = 0;
     currentTrial = 0;
     generateBlocks();
