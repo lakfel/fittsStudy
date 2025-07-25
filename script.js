@@ -1,6 +1,15 @@
 const canvas = document.getElementById("experimentCanvas");
 const ctx = canvas.getContext("2d");
 
+
+const feedbacks = [
+    {feedbackMode : "none",
+      buffer: [0]
+    }, 
+    {feedbackMode : "buffer",
+      buffer: [0, 10, 20]
+    }
+];
 const amplitudes = [84, 168, 238, 336, 672]; // ejemplo en píxeles
 const widths = [10.5, 21, 42];       // diámetro del target
 const trialsPerCombination = 9;
@@ -15,6 +24,7 @@ let trialPositionBasedData = []; // array de trials con datos de posición
 let firstTrial = true; // para manejar el primer trial
 
 let currentTrialS = {
+  feedbackMode,
   cursorPositions: [],
   cursorPositionsInterval: [], // array de posiciones del cursor
   movementStartTime: null,
@@ -29,6 +39,7 @@ let currentTrialS = {
 };
 
 let velocityChart = null;
+let velocityChart2 = null;
 
 let movementStarted = false;
 let trackingStartTime = null;
@@ -78,15 +89,17 @@ function generateBlocks() {
   blocks = [];
 
 
-  
-  for (let A of amplitudes) {
-    for (let W of widths) {
-     // for (let t = 0; t < trialsPerCombination; t++) {
-        blocks.push({ A, W });
-      //}
+  for (let feedback of feedbacks) {
+      feedbackMode = feedback.feedbackMode;
+      for(let buf of feedback.buffer){
+          for (let A of amplitudes) {
+            for (let W of widths) {
+              blocks.push({ A, W, feedbackMode, buffer: buf });
+            }
+          }
+        }
     }
-  }
-
+  
   // Aleatorizar el orden de bloques
   blocks = shuffleArray(blocks);
 }
@@ -381,6 +394,7 @@ canvas.addEventListener("mouseup", (e) => {
 
   // Reiniciar estado para siguiente trial
   currentTrialS = {
+    feedbackMode,
     cursorPositions: [],
     cursorPositionsInterval: [],
     movementStartTime: null,
@@ -412,6 +426,7 @@ function showTrialData(trial) {
   
   // Mostrar tiempos en números
   const lines = [
+    `Feedback: ${currentTrialS.feedbackMode}`,
     `A: ${currentTrialS.A}`,
     `W: ${currentTrialS.W}`,
     `ID: ${currentTrialS.ID.toFixed(2)}`,
@@ -427,10 +442,10 @@ function showTrialData(trial) {
   
 
   const { speeds, times } = getSpeedData(trial.cursorPositions);
-  drawSpeedChart("velocityChart", times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime);
+  velocityChart = drawSpeedChart("velocityChart", times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime, velocityChart);
 
- // const { speeds2, times2 } = getSpeedData(trial.cursorPositionsInterval);
- // drawSpeedChart("velocityChart2", times2, speeds2, trial.reachingTime, trial.clickDownTime, trial.clickUpTime);
+  const { speeds: speedsInterval, times: timesInterval } = getSpeedData(trial.cursorPositionsInterval);
+  velocityChart2 = drawSpeedChart("velocityChart2", timesInterval, speedsInterval, trial.reachingTime, trial.clickDownTime, trial.clickUpTime, velocityChart2);
 }
 
 function getSpeedData(positions) {
@@ -463,12 +478,12 @@ function createVerticalLineAnnotation(label, color, value) {
   };
 }
 
-function drawSpeedChart(chartName, times, speeds, reachingTime, clickDownTime, clickUpTime) {
+function drawSpeedChart(chartName, times, speeds, reachingTime, clickDownTime, clickUpTime, oldChart) {
 
   const ctx = document.getElementById(chartName).getContext("2d");
 
-  if (velocityChart) {
-    velocityChart.destroy();
+  if (oldChart) {
+    oldChart.destroy();
   }
 
   const annotations = {};
@@ -498,7 +513,7 @@ if (clickUpTime) {
 }
 
 
-  velocityChart = new Chart(ctx, {
+  return new Chart(ctx, {
     type: "line",
     data: {
       labels: times.map(t => t.toFixed(0)),
