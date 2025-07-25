@@ -1,8 +1,8 @@
 const canvas = document.getElementById("experimentCanvas");
 const ctx = canvas.getContext("2d");
 
-const amplitudes = [300, 400]; // ejemplo en píxeles
-const widths = [30, 60];       // diámetro del target
+const amplitudes = [84, 168, 238, 336, 672]; // ejemplo en píxeles
+const widths = [10.5, 21, 42];       // diámetro del target
 const trialsPerCombination = 9;
 
 
@@ -10,9 +10,13 @@ let trackingInterval = null;
 let currentMousePosition = { x: 0, y: 0 };
 
 let trialData = []; // array de todos los trials
+let trialPositionBasedData = []; // array de trials con datos de posición
+
+let firstTrial = true; // para manejar el primer trial
 
 let currentTrialS = {
   cursorPositions: [],
+  cursorPositionsInterval: [], // array de posiciones del cursor
   movementStartTime: null,
   reachingTime: null,
   clickDownTime: null,
@@ -137,7 +141,7 @@ function nextTrial() {
   }
 
   const { A, W } = blocks[currentBlock];
-  //stopCursorTracking();
+  stopCursorTracking();
 
 
 
@@ -152,11 +156,15 @@ function nextTrial() {
   trackingStartTime = now;
   movementStarted = true;
 
-  //startCursorTracking();
+  startCursorTracking();
 }
 
 function handleClickOnTarget(x, y) {
   //const activeTarget = targets[currentPair[currentTargetIndex]];
+  if(firstTrial) {
+    firstTrial = false;
+    return; // No hacer nada en el primer click
+  }
   const activeTarget = targets[(currentTrial + randomStart) * 5 % 9]; // Alterna entre los targets del par
   const dx = x - activeTarget.x;
   const dy = y - activeTarget.y;
@@ -189,6 +197,10 @@ canvas.addEventListener("mousemove", (e) => {
     const now = performance.now();
     if (trackingStartTime && now - trackingStartTime > 4000) return;
     const pos = { x: e.offsetX, y: e.offsetY, time: now };
+    currentMousePosition = {
+      x: e.offsetX,
+      y: e.offsetY
+    };
 
     currentTrialS.cursorPositions.push(pos);
 
@@ -233,8 +245,8 @@ function startCursorTracking() {
       time
     };
 
-    currentTrialS.cursorPositions.push(pos);
-    checkReaching(pos);
+    currentTrialS.cursorPositionsInterval.push(pos);
+    //checkReaching(pos);
   }, 1); // cada 10 ms
 }
 
@@ -330,7 +342,7 @@ function startExperiment() {
     const { A, W } = blocks[0];
     generateRingTargets(A, W);
     draw();
-    //startCursorTracking();  
+    startCursorTracking();  
 }
 
 canvas.addEventListener("mousedown", (e) => {
@@ -363,12 +375,14 @@ canvas.addEventListener("mouseup", (e) => {
   }
   currentTrialS.confirmationTime = currentTrialS.clickUpTime;
 
+  trialData.push(currentTrialS);
   
   showTrialData(currentTrialS);
 
   // Reiniciar estado para siguiente trial
   currentTrialS = {
     cursorPositions: [],
+    cursorPositionsInterval: [],
     movementStartTime: null,
     reachingTime: null,
     clickDownTime: null,
@@ -408,11 +422,20 @@ function showTrialData(trial) {
   ];
   infoEl.textContent = lines.join("\n");
 
-  // Calcular velocidad
+  
+  //const positions = trial.cursorPositions;
+  
+
+  const { speeds, times } = getSpeedData(trial.cursorPositions);
+  drawSpeedChart("velocityChart", times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime);
+
+ // const { speeds2, times2 } = getSpeedData(trial.cursorPositionsInterval);
+ // drawSpeedChart("velocityChart2", times2, speeds2, trial.reachingTime, trial.clickDownTime, trial.clickUpTime);
+}
+
+function getSpeedData(positions) {
   const speeds = [];
   const times = [];
-
-  const positions = trial.cursorPositions;
   for (let i = 1; i < positions.length; i++) {
     const dx = positions[i].x - positions[i - 1].x;
     const dy = positions[i].y - positions[i - 1].y;
@@ -422,11 +445,8 @@ function showTrialData(trial) {
     speeds.push(speed * 1000); // px/s
     times.push(positions[i].time - positions[0].time);
   }
-
-  drawSpeedChart(times, speeds, trial.reachingTime, trial.clickDownTime, trial.clickUpTime);
+  return { speeds, times };
 }
-
-
 
 function createVerticalLineAnnotation(label, color, value) {
   return {
@@ -443,9 +463,9 @@ function createVerticalLineAnnotation(label, color, value) {
   };
 }
 
-function drawSpeedChart(times, speeds, reachingTime, clickDownTime, clickUpTime) {
+function drawSpeedChart(chartName, times, speeds, reachingTime, clickDownTime, clickUpTime) {
 
-  const ctx = document.getElementById("velocityChart").getContext("2d");
+  const ctx = document.getElementById(chartName).getContext("2d");
 
   if (velocityChart) {
     velocityChart.destroy();
