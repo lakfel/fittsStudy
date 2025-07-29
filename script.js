@@ -1,4 +1,4 @@
-let participantId = null;
+let participantId = crypto.randomUUID();
 
 const canvas = document.getElementById("experimentCanvas");
 const ctx = canvas.getContext("2d");
@@ -17,7 +17,7 @@ const amplitudes = [238, 336, 672]; // ejemplo en píxeles
 const widths = [21, 42, 84];       // diámetro del target
 const trialsPerCombination = 9;
 
-
+let isExperimentDone = false;
 
 let trackingInterval = null;
 let currentMousePosition = { x: 0, y: 0 };
@@ -82,7 +82,7 @@ canvas.addEventListener("click", (e) => {
 
 
 
-  if (!isExperimentStarted) {
+  if (!isExperimentStarted && !isExperimentDone) {
     if (isInsideCircle(clickX, clickY, startButton)) {
         startExperiment();
         
@@ -446,6 +446,7 @@ function updateFeedbackMode() {
 
 async function endExperiment() {
   isExperimentStarted = false;
+  isExperimentDone = true;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.font = "24px Arial";
   ctx.fillStyle = "black";
@@ -480,7 +481,7 @@ async function startExperiment() {
 }
 
 canvas.addEventListener("mousedown", (e) => {
-  if (!isExperimentStarted) return;
+  if (!isExperimentStarted || isExperimentDone) return;
   currentTrialS.clickDownTime = performance.now();
   trackingStartTime = performance.now();
 });
@@ -722,7 +723,7 @@ async function initializeParticipant() {
     const user = firebase.auth().currentUser;
     if (!user) throw new Error("Usuario no autenticado");
 
-    participantId = user.uid;
+    // participantId = user.uid;
 
     // Genera un número aleatorio entre 0 y feedbackConditions.length - 1
     let orderIndex = Math.floor(Math.random() * feedbackConditions.length);
