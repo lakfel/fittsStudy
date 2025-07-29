@@ -23,20 +23,44 @@
   </head>
 <body>
   <h1>Fitts' Law Experiment</h1>
-  <label for="feedbackMode">Visual Feedback:</label>
-  <select id="feedbackMode">
-    <option value="none">None</option>
-    <option value="color">Target color</option>
-    <option value="buffer">Buffer collision</option>
-  </select>
-  <canvas style="align-self: center;" id="experimentCanvas" width="800" height="750"></canvas>
-  <button onclick="downloadCSV()">Download Results</button>
-  <script src="script.js"></script>
-<h2>Datos del Trial Actual</h2>
-<pre id="trialInfo"></pre>
 
-<canvas id="velocityChart" width="600" height="300"></canvas>
-<canvas id="velocityChart2" width="600" height="300"></canvas>
+  <canvas style="align-self: center;" id="experimentCanvas" width="800" height="800">
+  </canvas>
+  <button style = "display: none;" onclick="downloadCSV()">Download Results</button>
+<!-- Firebase App + Firestore (compat) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCf8Up8an_BTlmbAAZTbP8tsDWAuO3aeO8",
+    authDomain: "fittslaw-6568d.firebaseapp.com",
+    projectId: "fittslaw-6568d",
+    storageBucket: "fittslaw-6568d.firebasestorage.app",
+    messagingSenderId: "898459634444",
+    appId: "1:898459634444:web:e4ac2912327122ff135729",
+    measurementId: "G-GE9G8PQXRZ"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  firebase.auth().signInAnonymously()
+      .then(() => {
+        console.log("Usuario autenticado anónimamente");
+      })
+      .catch((error) => {
+        console.error("Error en autenticación anónima:", error);
+      });
+
+  // db ahora es global y accesible desde script.js
+</script>
+
+<script src="script.js"></script>
+<h2 style = "display: none;"`>Datos del Trial Actual</h2>
+<pre style = "display: none;" id="trialInfo"></pre>
+
+<canvas style = "display: none;" id="velocityChart" width="600" height="300"></canvas>
+<canvas style = "display: none;" id="velocityChart2" width="600" height="300"></canvas>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
