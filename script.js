@@ -350,7 +350,8 @@ function drawStartButton() {
     "Timing does NOT start until you reach the yellow target.",
     "After clicking Start, the set will begin.",
     "The target may or may not change color when reached,",
-    "as shown by the feedback indicator in the top-left corner."
+    "as shown by the feedback indicator in the top-left corner.",
+    "Make sure the browser zoom is set to 100% for accurate results.",
   ];
   let y = startButton.y + startButton.radius + 30;
   for (let line of instructions) {
@@ -449,8 +450,8 @@ async function endExperiment() {
   ctx.font = "24px Arial";
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
-  ctx.fillText("¡Experimento finalizado!", canvas.width / 2, canvas.height / 2);
-
+  ctx.fillText("¡Experiment finished!", canvas.width / 2, canvas.height / 2);
+  document.getElementById("velocityChart").style.display = "block";
   try {
     if (participantId) {
       await db.collection("participants").doc(participantId).update({
