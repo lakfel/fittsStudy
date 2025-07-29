@@ -1,7 +1,13 @@
+
+// Pariticipant ID
 let participantId = crypto.randomUUID();
 
+// UI elements
 const canvas = document.getElementById("experimentCanvas");
 const ctx = canvas.getContext("2d");
+
+//Experiment variables
+const indicationMethods = ["click", "barspace"];
 
 
 const feedbacks = [
@@ -12,24 +18,24 @@ const feedbacks = [
       buffer: [0, 10]
     }
 ];
-//const amplitudes = [84, 168, 238, 336, 672]; // ejemplo en píxeles
-const amplitudes = [238, 336, 672]; // ejemplo en píxeles
-const widths = [21, 42, 84];       // diámetro del target
-const trialsPerCombination = 9;
+
+const amplitudes = [238, 336, 672]; 
+const widths = [21, 42, 84];       
+const trialsPerCombination = 11;
+
+
 
 let isExperimentDone = false;
-
+let isExperimentStarted = false;
+let firstTrial = true;
 let trackingInterval = null;
 let currentMousePosition = { x: 0, y: 0 };
 
-let trialData = []; // array de todos los trials
-let trialPositionBasedData = []; // array de trials con datos de posición
-
-let firstTrial = true; // para manejar el primer trial
-
+let trialData = []; 
 let currentTrialS = {
   feedbackMode: null,
   buffer: 0,
+  indication: null,
   cursorPositions: [],
   cursorPositionsInterval: [], // array de posiciones del cursor
   movementStartTime: null,
@@ -52,14 +58,15 @@ let movementStarted = false;
 let trackingStartTime = null;
 
 
+let indicationConditions = shuffleArray(indicationMethods); // aleatorizar el orden de las condiciones de indicación
 let feedbackConditions = []; // array de condiciones de feedback
 let blocks = [];      // Cada bloque es una combinación A-W con T trials
 let currentBlock = 0;
 let currentTrial = 0;
 let currentCondition = 0; // índice de la condición actual
+let currentIndication = 0;
 
 let randomStart = 0;
-let isExperimentStarted = false;
 //let feedbackMode = "none";
 let targets = [];
 let movementStartTime = null;
@@ -96,9 +103,12 @@ canvas.addEventListener("click", (e) => {
 
 function generateConditions(orderIndex) {
   feedbackConditions = [];
-  for (let feedback of feedbacks) {
-    for (let buf of feedback.buffer) {
-      feedbackConditions.push({ feedbackMode: feedback.feedbackMode, buffer: buf });
+  for (let i = 0; i < indicationConditions.length; i++) {
+    const indication = indicationConditions[i];
+    for (let feedback of feedbacks) {
+      for (let buf of feedback.buffer) {
+        feedbackConditions.push({ feedbackMode: feedback.feedbackMode, buffer: buf, indication: indication });
+      }
     }
   }
   // Latin Square rotation (modulo N)
@@ -187,8 +197,7 @@ function nextTrial() {
     generateBlocks();
   }
 
-  const { A, W, feedbackMode, buffer } = blocks[currentBlock];
-  
+  const { A, W, feedbackMode, buffer, indication } = blocks[currentBlock];
 
 
 
@@ -202,6 +211,7 @@ function nextTrial() {
   currentTrialS.movementStartTime = now;
   currentTrialS.feedbackMode = feedbackMode;
   currentTrialS.buffer = buffer;
+  currentTrialS.indication = indication;
   trackingStartTime = now;
   movementStarted = true;
   if(!firstTrial)  startCursorTracking();
@@ -213,7 +223,7 @@ function handleClickOnTarget(x, y) {
     firstTrial = false;
     return; // No hacer nada en el primer click
   }
-  const activeTarget = targets[(currentTrial + randomStart) * 5 % 9]; // Alterna entre los targets del par
+  const activeTarget = getCurrentTarget(); // Alterna entre los targets del par
   const dx = x - activeTarget.x;
   const dy = y - activeTarget.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
@@ -278,7 +288,7 @@ function startCursorTracking() {
       return;
     }
 
-    const pos = {
+    currentMousePosition = {
       x: currentMousePosition.x,
       y: currentMousePosition.y,
       time
@@ -291,7 +301,7 @@ function startCursorTracking() {
 
 
 function checkReaching(pos) {
-    const target = targets[(currentTrial + randomStart)* 5 % 9]; // Alterna entre los targets del par
+    const target = getCurrentTarget(); // Alterna entre los targets del par
     const buffer = currentTrialS.buffer || 0; // buffer de colisión
     const dx = pos.x - target.x;
     const dy = pos.y - target.y;
@@ -345,7 +355,9 @@ function drawStartButton() {
   ctx.textBaseline = "top";
   const instructions = [
     "Welcome to the Fitts' Law Game!",
-    "Your task is to reach the targets as quickly and accurately as possible.",
+    "Your task is to reach the targets as quickly and accurately as possible using the pointer.",
+    "You will need to select using a click or barspace",
+    "according to the conditon displayed in the top-left corner.",
     "The first target of each set will be YELLOW.",
     "Timing does NOT start until you reach the yellow target.",
     "After clicking Start, the set will begin.",
@@ -383,6 +395,8 @@ function drawStartButton() {
     ctx.textBaseline = "middle";
     ctx.fillText(`Feedback: None `, indicatorX + 20,  indicatorY);
     ctx.fillText(`Feedback: Green `, indicatorX + 20,  2 * indicatorY);
+    ctx.fillText(`Indication: Click `, indicatorX + 20,  3* indicatorY);
+    ctx.fillText(`Indication: Barspace `, indicatorX + 20,  4 * indicatorY);
 
 }
 
@@ -419,6 +433,7 @@ function draw() {
   const indicatorY = 30;
   const circleRadius = 10;
   const feedback = feedbackConditions[currentCondition].feedbackMode || "none";
+  const indication = feedbackConditions[currentCondition].indication || "none";
   const circleColor = (feedback === "none") ? "#007BFF" : "#28a745"; // azul o verde
 
   // Dibuja círculo
@@ -433,7 +448,8 @@ function draw() {
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
   ctx.fillText(`Feedback: ${feedback}`, indicatorX + 20, indicatorY);
-  
+  ctx.fillText(`Selection: ${indication}`, indicatorX + 20, indicatorY + 20);
+
 }
 
 function updateFeedbackMode() {
@@ -481,53 +497,49 @@ async function startExperiment() {
 }
 
 canvas.addEventListener("mousedown", (e) => {
-  if (!isExperimentStarted || isExperimentDone) return;
-  currentTrialS.clickDownTime = performance.now();
-  trackingStartTime = performance.now();
+  if(feedbackConditions[currentCondition].indication === "click") {
+    indicationDown();
+  }
 });
 
 
-canvas.addEventListener("mouseup", (e) => {
-  if (!isExperimentStarted) return;
+function indicationDown() {
+  if (!isExperimentStarted || isExperimentDone) return;
+  currentTrialS.clickDownTime = performance.now();
+  trackingStartTime = performance.now();
+}
 
-  currentTrialS.clickUpTime = performance.now();
-
-  //const dx = e.offsetX - targets[currentPair[currentTargetIndex]].x;
-  //const dy = e.offsetY - targets[currentPair[currentTargetIndex]].y;
-  if(firstTrial) {
+function indicationUp() {
+  if (!isExperimentStarted || isExperimentDone) return; 
+    if(firstTrial) {
     firstTrial = false;
     currentTrial++; // Avanzar al siguiente trial
     draw(); // Redibujar para el siguiente trial
     return; // No hacer nada en el primer click
   }
-  const dx = e.offsetX - targets[(currentTrial + randomStart) * 5 % 9].x;
-  const dy = e.offsetY - targets[(currentTrial + randomStart) * 5 % 9].y;
+  currentTrialS.clickUpTime = performance.now();
+  //const dx = e.offsetX - getCurrentTarget().x;
+  //const dy = e.offsetY - getCurrentTarget().y;
+  const dx = currentMousePosition.x - getCurrentTarget().x;
+  const dy = currentMousePosition.y - getCurrentTarget().y;
   const distance = Math.sqrt(dx * dx + dy * dy);
-  currentTrialS.success = distance <= targets[(currentTrial + randomStart) * 5 % 9].radius;
-
+  currentTrialS.success = distance <= getCurrentTarget().radius;
   const block = blocks[currentBlock];
   currentTrialS.A = block.A;
   currentTrialS.W = block.W;
   currentTrialS.ID = Math.log2((2 * block.A) / block.W);
-  //currentTrialS.trialIndex = currentTrial;
-
   currentTrialS.clickUpTime = currentTrialS.clickUpTime - currentTrialS.movementStartTime;
   currentTrialS.clickDownTime = currentTrialS.clickDownTime - currentTrialS.movementStartTime;
-  /*if (currentTrialS.reachingTime) {
-    currentTrialS.reachingTime = currentTrialS.reachingTime - currentTrialS.movementStartTime;
-  }*/
   currentTrialS.confirmationTime = currentTrialS.clickUpTime;
-
   trialData.push(currentTrialS);
-  
   showTrialData(currentTrialS);
-
   saveTrialToFirestore(currentTrialS);
 
-  // Reiniciar estado para siguiente trial
+
   currentTrialS = {
     feedbackMode: null,
     buffer: 0,
+    indication: null,
     cursorPositions: [],
     cursorPositionsInterval: [],
     movementStartTime: null,
@@ -544,17 +556,40 @@ canvas.addEventListener("mouseup", (e) => {
   };
   movementStarted = false;
 
-  // Alternar target y avanzar
-  
-
   nextTrial();
   
-  
+
+}
+
+function getCurrentTarget() {
+  return targets[(currentTrial + randomStart) * 5 % 9]; // Alterna entre los targets del par
+}
+
+canvas.addEventListener("mouseup", (e) => {
 
 
+  if(feedbackConditions[currentCondition].indication === "click") {
+    indicationUp();
+  }
 
 });
 
+document.addEventListener("keydown", function(e) {
+  if (e.code === "Space" || e.key === " " || e.key === "Spacebar") {
+    if(feedbackConditions[currentCondition].indication === "barspace") {
+      indicationDown();
+    }
+  }
+});
+
+
+document.addEventListener("keyup", function(e) {
+  if (e.code === "Space" || e.key === " " || e.key === "Spacebar") {
+    if(feedbackConditions[currentCondition].indication === "barspace") {
+      indicationUp();
+    }
+  }
+});
 
 function showTrialData(trial) {
   const infoEl = document.getElementById("trialInfo");
