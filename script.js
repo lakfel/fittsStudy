@@ -766,11 +766,20 @@ async function initializeParticipant() {
     feedbackConditions = generateConditions(orderIndex);
     currentCondition  = 0; // Reiniciar al primer índice
 
+    
+    // Obtén resolución y zoom
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+    const zoom = window.devicePixelRatio;
+
     await db.collection("participants").doc(participantId).set({
       startedAt: new Date().toISOString(),
       completed: false,
       orderIndex: orderIndex,
-      feedbackConditions : feedbackConditions
+      feedbackConditions : feedbackConditions,
+      screenWidth: screenWidth,
+      screenHeight: screenHeight,
+      zoom: zoom
 
     });
 
