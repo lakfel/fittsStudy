@@ -502,6 +502,10 @@ async function startExperiment() {
 canvas.addEventListener("mousedown", (e) => {
   if(feedbackConditions[currentCondition].indication === "click") {
     indicationDown();
+      if(firstTrial) {
+    firstTrial = false;
+     // No hacer nada en el primer click
+  }
   }
 });
 
