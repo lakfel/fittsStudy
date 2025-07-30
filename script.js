@@ -96,7 +96,10 @@ canvas.addEventListener("click", (e) => {
     }
     return;
   }
-
+  if(firstTrial) {
+    firstTrial = false;
+     // No hacer nada en el primer click
+  }
   //handleClickOnTarget(clickX, clickY);
 });
 
@@ -214,7 +217,7 @@ function nextTrial() {
   currentTrialS.indication = indication;
   trackingStartTime = now;
   movementStarted = true;
-  if(!firstTrial)  startCursorTracking();
+   startCursorTracking();
 }
 
 function handleClickOnTarget(x, y) {
