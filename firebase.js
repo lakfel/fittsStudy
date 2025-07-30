@@ -23,9 +23,9 @@ async function initializeParticipant(participant) {
     const user = firebase.auth().currentUser;
     if (!user) throw new Error("Usuario no autenticado");
 
-    const participantId = participant.participantId;
+    
 
-    await db.collection("participants").doc(participantId).set({
+    await db.collection("participants").doc(participant.id).set({
       startedAt: new Date().toISOString(),
       completed: false,
       orderIndex: participant.orderIndex,

@@ -79,7 +79,7 @@ function drawStartButton(canvas, ctx, startButton) {
     "You will need to select using a click or barspace",
     "according to the conditon displayed in the top-left corner.",
     "The first target of each set will be YELLOW.",
-    "Timing does NOT start until you reach the yellow target.",
+    "Timing does NOT start until you reach the yellow target, you can rest with the yellow target.",
     "After clicking Start, the set will begin.",
     "The target may or may not change color when reached,",
     "as shown by the feedback indicator in the top-left corner.",

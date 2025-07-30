@@ -4,18 +4,54 @@ let participantId = crypto.randomUUID();
 
 //Experiment variables
 const indicationMethods = ["click", "barspace"];
+//const indicationMethods = ["click"];
+
 const feedbacks = [
     {feedbackMode : "none",
       buffer: [0]
     }, 
     {feedbackMode : "green",
-      buffer: [0, 10]
+      buffer: [0, 15]
+      //buffer: [0]
     }
 ];
 
 const amplitudes = [238, 336, 672]; 
 const widths = [21, 42, 84];       
-const trialsPerCombination = 11;
+/*const amplitudes = [238, 336]; 
+const widths = [21, 42];       */
+//const trialsPerCombination = 10;
+const trialsPerCombination = 10;
+
+
+let trackingInterval = null;
+let currentMousePosition = {
+    x: 0,
+    y: 0,
+    time: 0
+};
+
+currentTrialData = {
+    feedbackMode: null,
+    buffer: 0,
+    indication: null,
+    cursorPositions: [],
+    cursorPositionsInterval: [],
+    movementStartTime: null,
+    bufferReachingTimes: [],
+    bufferOutTimes: [],
+    reachingTimes: [],
+    outTimes: [],
+    inTarget: false,
+    inTargetBuffer: false,
+    clickDownTime: null,
+    clickUpTime: null,
+    success: false,
+    A: 0,
+    W: 0,
+    ID: 0,
+    trialIndex: 0
+};
 
 
 // Experiment control
@@ -64,16 +100,16 @@ drawStartButton(canvas, ctx, startButton);
 
 
 canvas.addEventListener("mousemove", (e) => {
-    if (state.UIstate !== 4) return; // Solo durante el experimento
+    // Solo durante el experimento
 
     const now = performance.now();
     if (trackingStartTime && now - trackingStartTime > 6000) return;
     currentMousePosition = {
       x: e.offsetX,
       y: e.offsetY, 
-      time: now
+      time: now  - currentTrialData.movementStartTime
     };
-    
+    if (state.UIstate !== 3) return; 
     currentTrialData.cursorPositions.push(currentMousePosition);
     checkReaching(currentMousePosition);
 });
@@ -86,23 +122,33 @@ function checkReaching(pos) {
     const dx = pos.x - target.x;
     const dy = pos.y - target.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-  
+    
     
     if (distance < target.radius + buffer) {
         target.hit = true;
-        if(!currentTrialData.inTarget){
-          currentTrialData.inTarget = true;
-          currentTrialData.reachingTimes.push(pos.time - currentTrialData.movementStartTime);
-        } 
+        if(!currentTrialData.inTargetBuffer) {
+            currentTrialData.inTargetBuffer = true;
+            currentTrialData.bufferReachingTimes.push(pos.time);
+            }
+        if(distance < target.radius){
+            if(!currentTrialData.inTarget){
+            currentTrialData.inTarget = true;
+            currentTrialData.reachingTimes.push(pos.time );
+            } 
+        }
     }
     else {
         target.hit = false;
-        if(currentTrialData.inTarget){
+        if(currentTrialData.inTargetBuffer) {
+            currentTrialData.inTargetBuffer = false;
+            currentTrialData.bufferOutTimes.push(pos.time );
+        }
+        if(distance > target.radius  && currentTrialData.inTarget){
           currentTrialData.inTarget = false;
-          currentTrialData.outTimes.push(pos.time - currentTrialData.movementStartTime);
+          currentTrialData.outTimes.push(pos.time );
         }
     }
-    draw(state.set.targets, state.set.currentTrial, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, false);
+    draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, false);
 
 }
 
@@ -122,8 +168,11 @@ canvas.addEventListener("click", (e) => {
     return;
   }
   else if (state.UIstate == 1) {
-    state.UIstate = 2; // Cambiar estado a experiment running pre start
-    draw(state.set.targets, state.set.currentTrial, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, true);
+    if (isInsideCircle(clickX, clickY, startButton)) {
+        state.UIstate = 2; // Cambiar estado a experiment running pre start
+        startCursorTracking();
+        draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, true);
+    }
   }
  
 });
@@ -140,9 +189,6 @@ async function startExperiment() {
 
     state.UIstate = 1; // Presenting instructions
   
-    
-    randomStart = Math.floor(Math.random() * 10);
-
     state.experiment.currentBlock = 0;
     state.set.currentTrial = 0;
     state.experiment.currentCondition = 0;
@@ -158,7 +204,6 @@ async function startExperiment() {
     state.participant.feedbackConditions = state.experiment.feedbackConditions;
 
     await initializeParticipant(state.participant);
-
     generateBlocks();
     const { A, W } = state.experiment.blocks[0];
     generateRingTargets(A, W);
@@ -168,11 +213,11 @@ async function startExperiment() {
 
 
 function isInExperimentRunningState() {
-  return state.UIstate === 3 || state.UIstate === 4;
+  return state.UIstate === 3 || state.UIstate === 2;
 }
 
 canvas.addEventListener("mousedown", (e) => {
-    if(!isInExperimentRunningState()) return;
+     if(!isInExperimentRunningState()) return;
     if(state.experiment.feedbackConditions[state.experiment.currentCondition].indication === "click") {
         indicationDown();
     }
@@ -187,9 +232,7 @@ document.addEventListener("keydown", function(e) {
 });
 function indicationDown() {
     if(!isInExperimentRunningState()) return;
-    if(!isInExperimentRunningState()) return;
-    if(state.UIstate !== 3) return; //Only durine experiment
-    currentTrialData.clickDownTime = performance.now();
+    currentTrialData.clickDownTime = performance.now() - currentTrialData.movementStartTime;
     trackingStartTime = performance.now();
 }
 
@@ -213,24 +256,37 @@ document.addEventListener("keyup", function(e) {
 function indicationUp() {
 
     if(!isInExperimentRunningState()) return;
-    if(state.UIstate == 4) { //Only during experiment
+    const dx = currentMousePosition.x - getCurrentTarget().x;
+    const dy = currentMousePosition.y - getCurrentTarget().y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const minThreshold = 40; // píxeles mínimos de tolerancia
+    const threshold = Math.max(getCurrentTarget().radius * 3, minThreshold);
+    if(distance >= threshold) return; // No hacer nada si el cursor está muy lejos del target
+
+    if(state.UIstate == 3) { //Only during experiment
         
-        currentTrialData.clickUpTime = performance.now();
-        const dx = currentMousePosition.x - getCurrentTarget().x;
-        const dy = currentMousePosition.y - getCurrentTarget().y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        currentTrialData.clickUpTime = performance.now() - currentTrialData.movementStartTime;
+        
         currentTrialData.success = distance <= getCurrentTarget().radius;
         currentTrialData.insideBuffer = distance <= (getCurrentTarget().radius + state.set.buffer);
-        const block = blocks[currentBlock];
+        const block = state.experiment.blocks[state.experiment.currentBlock];
         currentTrialData.A = block.A;
         currentTrialData.W = block.W;
         currentTrialData.ID = Math.log2((2 * block.A) / block.W);
-        currentTrialData.clickUpTime = currentTrialData.clickUpTime - currentTrialData.movementStartTime;
-        currentTrialData.clickDownTime = currentTrialData.clickDownTime - currentTrialData.movementStartTime;
+        
         currentTrialData.confirmationTime = currentTrialData.clickUpTime;
-        trialData.push(currentTrialData);
-        showTrialData(currentTrialData);
-        saveTrialToFirestore(currentTrialData);
+        currentTrialData.trialIndex = state.set.currentTrial;
+        
+        saveTrialToFirestore(currentTrialData, state.participant.id);
+    }
+    else
+    {
+        if(distance <= getCurrentTarget().radius) {
+            state.UIstate = 3;
+        }
+        else{
+            return;
+        }
     }
 
 
@@ -245,29 +301,87 @@ function indicationUp() {
 
 
   currentTrialData = {
-    feedbackMode: null,
-    buffer: 0,
-    indication: null,
+    feedbackMode: state.set.feedbackMode,
+    buffer: state.set.buffer,
+    indication: state.set.indication,
     cursorPositions: [],
     cursorPositionsInterval: [],
     movementStartTime: null,
     reachingTimes: [],
     outTimes: [],
+    bufferReachingTimes: [],
+    bufferOutTimes: [],
     inTarget: false,
+    inTargetBuffer: false,
     clickDownTime: null,
     clickUpTime: null,
     success: false,
+    insideBuffer: false,
     A: 0,
     W: 0,
     ID: 0,
     trialIndex: 0
   };
-  movementStarted = false;
+
+
 
   nextTrial();
   
 
 }
+
+
+
+async function endExperiment() {
+  state.UIstate = 5; // Done
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "24px Arial";
+  ctx.fillStyle = "black";
+  ctx.textAlign = "center";
+  ctx.fillText("You finished... thanks!", canvas.width / 2, canvas.height / 2);
+  document.getElementById("velocityChart").style.display = "block";
+  try {
+    
+    completeParticipant(state.participant.id);
+    
+  } catch (err) {
+    console.error("Error al actualizar participante:", err);
+  }
+}
+
+
+function nextTrial() {
+
+ 
+  state.set.currentTrial++;
+
+  if (state.set.currentTrial >= trialsPerCombination) { // Set finished
+    state.UIstate = 2;
+    state.experiment.currentBlock++; // Move to the next Block
+    state.set.currentTrial = 0;
+    if (state.experiment.currentBlock >= state.experiment.blocks.length) {
+      state.experiment.currentBlock = 0;
+      state.experiment.currentCondition++; // Move to the next Condition
+      if (state.experiment.currentCondition >= state.experiment.feedbackConditions.length) {
+        endExperiment();
+        return;
+      }
+      generateBlocks();
+      state.UIstate = 1;
+      drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
+      return;
+    }
+    const { A, W, feedbackMode, buffer, indication } = state.experiment.blocks[state.experiment.currentBlock];
+
+    generateRingTargets(A, W);
+  }
+
+  stopCursorTracking();
+  draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.UIstate === 2);
+
+  startCursorTracking();
+}
+
 
 function generateBlocks() {
 
@@ -276,6 +390,8 @@ function generateBlocks() {
     currentFeedback = state.experiment.feedbackConditions[state.experiment.currentCondition];
     currentBuffer = currentFeedback.buffer;
     currentFeedbackMode = currentFeedback.feedbackMode;
+    currentIndication = currentFeedback.indication;
+
 
     for (let A of amplitudes) {
         for (let W of widths) {
@@ -283,12 +399,15 @@ function generateBlocks() {
         }
     }
     state.experiment.blocks = shuffleArray(state.experiment.blocks);
+
     state.set.feedbackMode = currentFeedbackMode;
-    state.set.buffer = currentBuffer; // Usar el primer buffer como valor por defecto
+    state.set.buffer = currentBuffer;
+    state.set.indication = currentIndication;
 }
 
 
 function generateRingTargets(A, W) {
+
   const N = 9;
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
@@ -312,7 +431,7 @@ function generateRingTargets(A, W) {
       radius: W / 2,
     });
   }
-
+  randomStart = Math.floor(Math.random() * 10);
   // Empezar alternancia en 0 y 5 (opuestos)
 }
 
@@ -350,4 +469,39 @@ function shuffleArray(array) {
     .map(value => ({ value, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
     .map(({ value }) => value);
+}
+
+function stopCursorTracking() {
+  if (trackingInterval) {
+    clearInterval(trackingInterval);
+    trackingInterval = null;
+  }
+}
+
+
+function startCursorTracking() {
+  const now = performance.now();
+
+  currentTrialData.movementStartTime = now;
+  trackingStartTime = now;
+  movementStarted = true;
+
+  trackingInterval = setInterval(() => {
+    const time = performance.now();
+
+    // Limita el tiempo de muestreo a 4 segundos
+    if (time - trackingStartTime > 4000) {
+      stopCursorTracking();
+      return;
+    }
+
+    currentMousePosition = {
+      x: currentMousePosition.x,
+      y: currentMousePosition.y,
+      time
+    };
+
+    //currentTrialData.cursorPositionsInterval.push(pos);
+    //checkReaching(pos);
+  }, 2); // cada 10 ms
 }

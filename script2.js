@@ -6,20 +6,6 @@ let participantId = crypto.randomUUID();
 const canvas = document.getElementById("experimentCanvas");
 const ctx = canvas.getContext("2d");
 
-//Experiment variables
-const indicationMethods = ["click", "barspace"];
-const feedbacks = [
-    {feedbackMode : "none",
-      buffer: [0]
-    }, 
-    {feedbackMode : "green",
-      buffer: [0, 10]
-    }
-];
-
-const amplitudes = [238, 336, 672]; 
-const widths = [21, 42, 84];       
-const trialsPerCombination = 11;
 
 let state = {
   experiment: {
@@ -82,12 +68,6 @@ let targets = [];
 let movementStartTime = null;
 let data = [];
 
-
-const startButton = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  radius: 50,
-};
 
 
 drawStartButton();
@@ -192,13 +172,11 @@ function generateRingTargets(A, W) {
 
 function nextTrial() {
 
-  if (firstTrial) {
-    firstTrial = false;
-  }
-
+ 
   state.experiment.currentTrial++;
 
-  if (state.experiment.currentTrial >= trialsPerCombination) {
+  if (state.experiment.currentTrial >= trialsPerCombination) { // Trial finished
+    state.UIstate = 3;
     state.experiment.currentBlock++;
     state.experiment.currentTrial = 0;
     firstTrial = true; 
@@ -234,7 +212,7 @@ function nextTrial() {
   currentTrialData.indication = indication;
   trackingStartTime = now;
   movementStarted = true;
-   startCursorTracking();
+  startCursorTracking();
 }
 
 function handleClickOnTarget(x, y) {
@@ -435,7 +413,10 @@ async function startExperiment() {
     data = [];
     currentBlock = 0;
     state.experiment.currentTrial = 0;
+    
+    
     await initializeParticipant(participantId);
+
 
     generateBlocks();
     const { A, W } = blocks[0];
