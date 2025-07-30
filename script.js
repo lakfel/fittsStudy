@@ -103,13 +103,13 @@ canvas.addEventListener("mousemove", (e) => {
     // Solo durante el experimento
 
     const now = performance.now();
-    if (trackingStartTime && now - trackingStartTime > 6000) return;
     currentMousePosition = {
       x: e.offsetX,
       y: e.offsetY, 
       time: now  - currentTrialData.movementStartTime
     };
     if (state.UIstate !== 3) return; 
+    if (trackingStartTime && now - trackingStartTime > 6000) return;
     currentTrialData.cursorPositions.push(currentMousePosition);
     checkReaching(currentMousePosition);
 });
