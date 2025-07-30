@@ -221,7 +221,7 @@ function handleClickOnTarget(x, y) {
   //const activeTarget = targets[currentPair[currentTargetIndex]];
   if(firstTrial) {
     firstTrial = false;
-    return; // No hacer nada en el primer click
+     // No hacer nada en el primer click
   }
   const activeTarget = getCurrentTarget(); // Alterna entre los targets del par
   const dx = x - activeTarget.x;
@@ -511,12 +511,12 @@ function indicationDown() {
 
 function indicationUp() {
   if (!isExperimentStarted || isExperimentDone) return; 
-    if(firstTrial) {
+ /*   if(firstTrial) {
     firstTrial = false;
     currentTrial++; // Avanzar al siguiente trial
     draw(); // Redibujar para el siguiente trial
     return; // No hacer nada en el primer click
-  }
+  }*/
   currentTrialS.clickUpTime = performance.now();
   //const dx = e.offsetX - getCurrentTarget().x;
   //const dy = e.offsetY - getCurrentTarget().y;
