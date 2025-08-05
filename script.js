@@ -2,6 +2,8 @@
 // Pariticipant ID
 let participantId = crypto.randomUUID();
 
+let record_results = false; // Si se deben guardar los resultados en Firestore
+
 //Experiment variables
 const indicationMethods = ["click", "barspace"];
 //const indicationMethods = ["click"];
@@ -203,7 +205,7 @@ async function startExperiment() {
     state.experiment.feedbackConditions = generateConditions(state.participant.orderIndex);
     state.participant.feedbackConditions = state.experiment.feedbackConditions;
 
-    await initializeParticipant(state.participant);
+    if(record_results) await initializeParticipant(state.participant);
     generateBlocks();
     const { A, W } = state.experiment.blocks[0];
     generateRingTargets(A, W);
@@ -276,8 +278,11 @@ function indicationUp() {
         
         currentTrialData.confirmationTime = currentTrialData.clickUpTime;
         currentTrialData.trialIndex = state.set.currentTrial;
+
         
-        saveTrialToFirestore(currentTrialData, state.participant.id);
+        //showTrialData(currentTrialData);
+
+        if(record_results) saveTrialToFirestore(currentTrialData, state.participant.id);
     }
     else
     {
@@ -341,9 +346,9 @@ async function endExperiment() {
   ctx.fillText("You finished... thanks!", canvas.width / 2, canvas.height / 2);
   document.getElementById("velocityChart").style.display = "block";
   try {
-    
-    completeParticipant(state.participant.id);
-    
+
+    if(record_results) completeParticipant(state.participant.id);
+
   } catch (err) {
     console.error("Error al actualizar participante:", err);
   }
@@ -504,4 +509,148 @@ function startCursorTracking() {
     //currentTrialData.cursorPositionsInterval.push(pos);
     //checkReaching(pos);
   }, 2); // cada 10 ms
+}
+
+
+function showTrialData(trial) {
+  const infoEl = document.getElementById("trialInfo");
+  
+  const lastReachingTime = trial.reachingTimes.length > 0 ? trial.reachingTimes[trial.reachingTimes.length - 1] : null;
+  const lastOutTime = trial.outTimes.length > 0 ? trial.outTimes[trial.outTimes.length - 1] : null;
+
+  // Mostrar tiempos en números
+  const lines = [
+    `Feedback: ${currentTrialData.feedbackMode}`,
+    `A: ${currentTrialData.A}`,
+    `W: ${currentTrialData.W}`,
+    `ID: ${currentTrialData.ID.toFixed(2)}`,
+    `Reaching Time: ${lastReachingTime?.toFixed(2)} ms`,
+    `Out Time: ${lastOutTime?.toFixed(2)} ms`,
+    `Confirmation Time: ${currentTrialData.confirmationTime?.toFixed(2)} ms`,
+    `Click Duration: ${currentTrialData.clickDuration?.toFixed(2)} ms`,
+    `Success: ${currentTrialData.success ? "✔️" : "❌"}`
+  ];
+  infoEl.textContent = lines.join("\n");
+
+  
+  //const positions = trial.cursorPositions;
+  
+
+  const { speeds, times } = getSpeedData(trial.cursorPositions);
+  velocityChart = drawSpeedChart("velocityChart", times, speeds, trial.reachingTimes, trial.outTimes, trial.clickDownTime, trial.clickUpTime, velocityChart);
+
+  const { speeds: speedsInterval, times: timesInterval } = getSpeedData(trial.cursorPositionsInterval);
+  velocityChart2 = drawSpeedChart("velocityChart2", timesInterval, speedsInterval, trial.reachingTimes, trial.outTimes, trial.clickDownTime, trial.clickUpTime, velocityChart2);
+}
+
+function getSpeedData(positions) {
+  const speeds = [];
+  const times = [];
+  for (let i = 1; i < positions.length; i++) {
+    const dx = positions[i].x - positions[i - 1].x;
+    const dy = positions[i].y - positions[i - 1].y;
+    const dt = positions[i].time - positions[i - 1].time;
+
+    const speed = Math.sqrt(dx * dx + dy * dy) / dt; // px/ms
+    speeds.push(speed * 1000); // px/s
+    times.push(positions[i].time - positions[0].time);
+  }
+  return { speeds, times };
+}
+
+function createVerticalLineAnnotation(label, color, value) {
+  return {
+    type: 'line',
+    scaleID: 'x',
+    value: value.toFixed(0),
+    borderColor: color,
+    borderWidth: 2,
+    label: {
+      content: label,
+      enabled: true,
+      position: 'top'
+    }
+  };
+}
+
+function drawSpeedChart(chartName, times, speeds, reachingTimes, outTimes, clickDownTime, clickUpTime, oldChart) {
+
+  const ctx = document.getElementById(chartName).getContext("2d");
+
+  if (oldChart) {
+    oldChart.destroy();
+  }
+
+  const annotations = {};
+
+  if (reachingTimes.length > 0) {
+    for (let i = 0; i < reachingTimes.length; i++) {
+      annotations[`reach${i}`] = createVerticalLineAnnotation(
+        "Reach",
+        "orange",
+        reachingTimes[i]
+      );
+    }
+  }
+
+  if (outTimes.length > 0) {
+    for (let i = 0; i < outTimes.length; i++) {
+      annotations[`out${i}`] = createVerticalLineAnnotation(
+        "Out",
+        "red",
+        outTimes[i]
+      );
+    }
+  }
+  
+  if (clickDownTime) {
+    annotations.clickDown = createVerticalLineAnnotation(
+      "MouseDown",
+      "blue",
+      clickDownTime 
+    );
+}
+
+if (clickUpTime) {
+  annotations.clickUp = createVerticalLineAnnotation(
+    "MouseUp",
+    "green",
+    clickUpTime 
+  );
+}
+
+
+  return new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: times.map(t => t.toFixed(0)),
+      datasets: [{
+        label: "Velocidad (px/s)",
+        data: times.map((t, i) => ({ x: t, y: speeds[i] })), // <-- usa objetos {x, y}
+        fill: false,
+        borderColor: "blue",
+        pointRadius: 1,
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: false,
+      plugins: {
+        legend: { display: true },
+        annotation: {
+          annotations
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear', // <-- importante!
+          title: { display: true, text: "Tiempo (ms)" }
+        },
+        y: {
+          title: { display: true, text: "Velocidad (px/s)" }
+        }
+      }
+    },
+    plugins: [Chart.registry.getPlugin('annotation')]
+  });
 }

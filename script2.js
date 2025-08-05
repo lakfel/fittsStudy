@@ -175,9 +175,8 @@ function nextTrial() {
  
   state.experiment.currentTrial++;
 
-  if (state.experiment.currentTrial >= trialsPerCombination) { // Trial finished
-    state.UIstate = 3;
-    state.experiment.currentBlock++;
+  if (state.experiment.currentTrial >= trialsPerCombination) { // Set finished
+    state.experiment.currentBlock++; // Move to the next Block
     state.experiment.currentTrial = 0;
     firstTrial = true; 
     randomStart = Math.floor(Math.random() * 10); // reiniciar aleatorio entre 0 y 8
