@@ -1,0 +1,934 @@
+[
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 5,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            1470.0
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            1470.0
+        ],
+        "outTimes": [],
+        "confirmationTime": 1727.2999999999302,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 1634.8999999999069,
+        "clickUpTime": 1727.2999999999302
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 4,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            134.70000000006985
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            150.59999999997672
+        ],
+        "outTimes": [],
+        "confirmationTime": 469.5999999999767,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 330.80000000004657,
+        "clickUpTime": 469.5999999999767
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 7,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            207.59999999997672
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            207.59999999997672
+        ],
+        "outTimes": [],
+        "confirmationTime": 552.0,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 488.39999999990687,
+        "clickUpTime": 552.0
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 5,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            232.40000000002328
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            247.40000000002328
+        ],
+        "outTimes": [],
+        "confirmationTime": 431.9000000000233,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 367.69999999995343,
+        "clickUpTime": 431.9000000000233
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 7,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            255.20000004768372
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            286.2000000476837
+        ],
+        "outTimes": [],
+        "confirmationTime": 535.3999999761581,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 453.8000000715256,
+        "clickUpTime": 535.3999999761581
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 5,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            322.69999999995343
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            442.0
+        ],
+        "outTimes": [],
+        "confirmationTime": 582.7999999999302,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 462.0999999999767,
+        "clickUpTime": 582.7999999999302
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            460.0999999999767
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            481.0
+        ],
+        "outTimes": [],
+        "confirmationTime": 726.8000000000466,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 622.9000000000233,
+        "clickUpTime": 726.8000000000466
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            231.09999999403954
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            415.19999999552965
+        ],
+        "outTimes": [],
+        "confirmationTime": 784.2999999970198,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 691.0999999940395,
+        "clickUpTime": 784.2999999970198
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 1,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            223.40000000002328
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            231.40000000002328
+        ],
+        "outTimes": [],
+        "confirmationTime": 487.29999999993015,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 408.0999999999767,
+        "clickUpTime": 487.29999999993015
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 5,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            281.0999999999767
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            304.69999999995343
+        ],
+        "outTimes": [],
+        "confirmationTime": 578.1999999999534,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 443.0999999999767,
+        "clickUpTime": 578.1999999999534
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 9,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            445.4000000000233
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            516.1999999999534
+        ],
+        "outTimes": [],
+        "confirmationTime": 747.9000000000233,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 668.5,
+        "clickUpTime": 747.9000000000233
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 6,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            310.69999999995343
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            319.0999999999767
+        ],
+        "outTimes": [],
+        "confirmationTime": 662.2999999999302,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 575.5999999999767,
+        "clickUpTime": 662.2999999999302
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 9,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            431.09999990463257
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            455.2999999523163
+        ],
+        "outTimes": [],
+        "confirmationTime": 686.2999999523163,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 607.2999999523163,
+        "clickUpTime": 686.2999999523163
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            405.7000000476837
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            486.10000002384186
+        ],
+        "outTimes": [],
+        "confirmationTime": 814.8999999761581,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 709.6000000238419,
+        "clickUpTime": 814.8999999761581
+    },
+    {
+        "participantId": "c3f6b3a1-52b1-4f96-9ea6-17fe8f4e12d1",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            821.6000000238419
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            821.6000000238419
+        ],
+        "outTimes": [],
+        "confirmationTime": 1502.3999999761581,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 1316.2000000476837,
+        "clickUpTime": 1502.3999999761581
+    },
+    {
+        "participantId": "c3f6b3a1-52b1-4f96-9ea6-17fe8f4e12d1",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            345.7999999523163
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            409.39999997615814
+        ],
+        "outTimes": [],
+        "confirmationTime": 721.3999999761581,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 601.2999999523163,
+        "clickUpTime": 721.3999999761581
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            198.39999999990687
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            237.09999999997672
+        ],
+        "outTimes": [],
+        "confirmationTime": 461.0999999999767,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 311.0999999999767,
+        "clickUpTime": 461.0999999999767
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 7,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            160.10000000149012
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            377.5
+        ],
+        "outTimes": [],
+        "confirmationTime": 628.8000000044703,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 566.7000000029802,
+        "clickUpTime": 628.8000000044703
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 1,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            686.3999999999069,
+            1005.7999999999302,
+            1422.3999999999069
+        ],
+        "bufferOutTimes": [
+            745.7999999999302,
+            1019.6999999999534
+        ],
+        "reachingTimes": [
+            707.1999999999534,
+            1436.2999999999302
+        ],
+        "outTimes": [
+            745.7999999999302
+        ],
+        "confirmationTime": 1491.7999999999302,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 1375.7999999999302,
+        "clickUpTime": 1491.7999999999302
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 2,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            369.40000000596046
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            403.1000000014901
+        ],
+        "outTimes": [],
+        "confirmationTime": 721.5,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 627.9000000059605,
+        "clickUpTime": 721.5
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            359.70000000298023
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            427.20000000298023
+        ],
+        "outTimes": [],
+        "confirmationTime": 727.8000000044703,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 599.8000000044703,
+        "clickUpTime": 727.8000000044703
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 2,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            432.19999999995343
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            455.39999999990687
+        ],
+        "outTimes": [],
+        "confirmationTime": 656.0,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 584.0,
+        "clickUpTime": 656.0
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            201.19999999552965
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            334.0
+        ],
+        "outTimes": [],
+        "confirmationTime": 656.7999999970198,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 562.1999999955297,
+        "clickUpTime": 656.7999999970198
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 6,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            336.10000002384186
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            384.39999997615814
+        ],
+        "outTimes": [],
+        "confirmationTime": 633.7000000476837,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 527.8999999761581,
+        "clickUpTime": 633.7000000476837
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            364.0
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            664.1000000014901
+        ],
+        "outTimes": [],
+        "confirmationTime": 893.8999999985099,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 768.3999999985099,
+        "clickUpTime": 893.8999999985099
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 5,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            367.80000000004657
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            590.4000000000233
+        ],
+        "outTimes": [],
+        "confirmationTime": 864.5,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 783.9000000000233,
+        "clickUpTime": 864.5
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            554.1000000014901
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            704.3999999985099
+        ],
+        "outTimes": [],
+        "confirmationTime": 1023.2999999970198,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 954.0,
+        "clickUpTime": 1023.2999999970198
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 2,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            311.4000000000233
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            400.29999999993015
+        ],
+        "outTimes": [],
+        "confirmationTime": 576.4000000000233,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 487.5999999999767,
+        "clickUpTime": 576.4000000000233
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 1,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            642.1000000014901
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            659.5
+        ],
+        "outTimes": [],
+        "confirmationTime": 1015.8000000044703,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 909.2000000029802,
+        "clickUpTime": 1015.8000000044703
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 2,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            343.80000000447035
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            377.1000000014901
+        ],
+        "outTimes": [],
+        "confirmationTime": 761.1000000014901,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 638.9000000059605,
+        "clickUpTime": 761.1000000014901
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 2,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            273.19999999552965
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            288.6000000014901
+        ],
+        "outTimes": [],
+        "confirmationTime": 799.8999999985099,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 664.3999999985099,
+        "clickUpTime": 799.8999999985099
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 5,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            256.0
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            256.0
+        ],
+        "outTimes": [],
+        "confirmationTime": 513.7999999999302,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 402.0,
+        "clickUpTime": 513.7999999999302
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 4,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            334.39999997615814
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            350.5
+        ],
+        "outTimes": [],
+        "confirmationTime": 742.3999999761581,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 653.8999999761581,
+        "clickUpTime": 742.3999999761581
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            440.9000000000233
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            440.9000000000233
+        ],
+        "outTimes": [],
+        "confirmationTime": 766.4000000000233,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 675.0,
+        "clickUpTime": 766.4000000000233
+    },
+    {
+        "participantId": "c3f6b3a1-52b1-4f96-9ea6-17fe8f4e12d1",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            580.5
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            860.7999999523163
+        ],
+        "outTimes": [],
+        "confirmationTime": 1249.2000000476837,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 1064.1000000238419,
+        "clickUpTime": 1249.2000000476837
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 6,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            360.0
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            425.69999999552965
+        ],
+        "outTimes": [],
+        "confirmationTime": 826.6999999955297,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 684.5999999940395,
+        "clickUpTime": 826.6999999955297
+    },
+    {
+        "participantId": "87b39d79-9d43-4696-9ea0-6c099aa1adcc",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            428.80000000447035
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            545.5
+        ],
+        "outTimes": [],
+        "confirmationTime": 963.9000000059605,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 902.0,
+        "clickUpTime": 963.9000000059605
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 6,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            317.6999999284744
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            383.6999999284744
+        ],
+        "outTimes": [],
+        "confirmationTime": 695.5,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 557.1000000238419,
+        "clickUpTime": 695.5
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            401.8000000715256
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            489.2000000476837
+        ],
+        "outTimes": [],
+        "confirmationTime": 737.7000000476837,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 647.5,
+        "clickUpTime": 737.7000000476837
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 3,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            489.5
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            607.6000000000931
+        ],
+        "outTimes": [],
+        "confirmationTime": 748.3000000000466,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 663.5,
+        "clickUpTime": 748.3000000000466
+    },
+    {
+        "participantId": "b40a1fcd-0525-4ffc-973e-2e3aa406e907",
+        "trialIndex": 7,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            276.0999999999767
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            300.29999999993015
+        ],
+        "outTimes": [],
+        "confirmationTime": 499.79999999993015,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 413.69999999995343,
+        "clickUpTime": 499.79999999993015
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 8,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            368.40000009536743
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            391.90000009536743
+        ],
+        "outTimes": [],
+        "confirmationTime": 664.5,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 542.6000000238419,
+        "clickUpTime": 664.5
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 7,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            306.60000002384186
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            329.60000002384186
+        ],
+        "outTimes": [],
+        "confirmationTime": 681.0,
+        "feedbackMode": "green",
+        "indication": "barspace",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 536.0,
+        "clickUpTime": 681.0
+    },
+    {
+        "participantId": "c6b289d3-cc73-4ceb-a5c4-7eed5529e063",
+        "trialIndex": 6,
+        "success": false,
+        "buffer": 15,
+        "bufferReachingTimes": [
+            344.90000009536743
+        ],
+        "bufferOutTimes": [],
+        "reachingTimes": [
+            352.90000009536743
+        ],
+        "outTimes": [],
+        "confirmationTime": 607.7000000476837,
+        "feedbackMode": "green",
+        "indication": "click",
+        "inTarget": true,
+        "inTargetBuffer": true,
+        "clickDownTime": 545.3000000715256,
+        "clickUpTime": 607.7000000476837
+    }
+]

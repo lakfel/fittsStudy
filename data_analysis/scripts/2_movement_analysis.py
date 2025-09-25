@@ -11,7 +11,7 @@ def main():
 
     outdir = Path(up.PROCESSED_DATA); outdir.mkdir(parents=True, exist_ok=True)
     df = pd.read_parquet(up.POSITIONS_FILE)
-    print(df.columns)
+    #print(df.columns)
 
     # Expect at least trialDocId,t,x,y
     required = {"trialDocId","t","x","y"}
@@ -19,11 +19,11 @@ def main():
         raise ValueError(f"Positions parquet must include columns: {required}")
 
     seg_rows = []
-    
+    kinematic_rows = []
 
     #for trial_id, grp in df.groupby("trialDocId"):
     #for trial_id, grp in [next(iter(df.groupby("trialDocId")))]:
-    for trial_id, grp in [list(df.groupby("trialDocId"))[0]]:
+    for trial_id, grp in list(df.groupby("trialDocId"))[56:65]:
 
         grp_sorted = grp[['t','x','y']].sort_values('t')
         if grp_sorted['t'].iloc[0] > 0:
@@ -34,20 +34,28 @@ def main():
         #plot_trial_positions(grp_sorted)
         plot_trial_velocities(calculate_velocity(grp_sorted))
         tempo = analyze_trial_positions(grp_sorted)
-        print(f"Trial {trial_id} analyzed: {tempo.keys()}")
-        plot_trial_positions(tempo['uniform'])
-        #segs = out['segments'].copy()
-        #if segs is None or segs.empty:
-        #    continue
-        #print(segs)
-        #segs.insert(0, "trialDocId", trial_id)
-        #seg_rows.append(segs)
+        #print(f"Trial {trial_id} analyzed: {tempo.keys()}")
+        plot_trial_velocities(tempo['uniform'], tempo['segments'])
+        #print(f'Segments: {len(tempo["segments"]) if tempo["segments"] is not None else 0} -- {tempo["segments"]}')
+        segs = tempo['segments'].copy()
+        kinems = tempo['uniform'].copy()
 
+        if segs is None or segs.empty:
+            continue
+        #print(segs)
+        segs.insert(0, "trialDocId", trial_id)
+        kinems.insert(0, "trialDocId", trial_id)
+        seg_rows.append(segs)
+        kinematic_rows.append(kinems)
+    return
     if seg_rows:
         seg_all = pd.concat(seg_rows, ignore_index=True)
-        seg_path = outdir / "submovements.parquet"
-        seg_all.to_parquet(seg_path, index=False)
-        print(f"Saved segments -> {seg_path} ({len(seg_all)} rows)")
+        seg_all.to_parquet(up.SEGMENTS_FILE, index=False)
+
+        kins_all = pd.concat(kinematic_rows, ignore_index=True)
+        kins_all.to_parquet(up.KINEMATICS_FILE, index = False)
+
+        #print(f"Saved segments -> {seg_path} ({len(seg_all)} rows)")
     else:
         print("No segments detected.")
 
@@ -71,18 +79,37 @@ def plot_trial_positions(df_trial: pd.DataFrame):
     plt.tight_layout()
     plt.show()
 
-def plot_trial_velocities(df_trial: pd.DataFrame):
+def plot_trial_velocities(df_trial: pd.DataFrame, segments: pd.DataFrame=None):
     """
     df_trial: columns ['t','x','y'] (ms, px)
     """
+
+    #print(f"Plotting velocities for trial with {len(df_trial)} points \n {df_trial} ")
+
     plt.figure(figsize=(8,4))
     plt.plot(df_trial['t'], df_trial['v'], label='velocity', color='green')
+
+    #print(f"{df_trial.head()}")
+
+    #print(f"{segments.head()}")
+
+    if segments is not None:
+        for _, seg in segments.iterrows():
+            
+            color = 'blue' if 'rapid' in seg['type'] else 'red'
+            plt.axvline(x=seg['t_start'], color=color, linestyle='--', alpha=0.6)
+            plt.axvline(x=seg['t_end'], color=color, linestyle='--', alpha=0.6)
+
+
+    
     plt.xlabel('t')
     plt.ylabel('velocity (px/ms)')
     plt.title("Trial velocities: t vs velocity")
     plt.legend()
     plt.tight_layout()
     plt.show()
+
+        
 
 def calculate_velocity (df_trial: pd.DataFrame) -> pd.DataFrame:
     """
