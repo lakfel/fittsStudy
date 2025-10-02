@@ -13,3 +13,4 @@ POSITIONS_FILE = str(Path(PROCESSED_DATA) / "positions_latest.parquet")
 SEGMENTS_FILE = str(Path(PROCESSED_DATA) / "submovements.parquet")
 KINEMATICS_FILE = str(Path(PROCESSED_DATA) / "kinematics.parquet")
 
+ANALYSIS_FILE_1 = str(Path(PROCESSED_DATA) / "analysis_results.csv")

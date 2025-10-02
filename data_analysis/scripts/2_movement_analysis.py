@@ -21,9 +21,9 @@ def main():
     seg_rows = []
     kinematic_rows = []
 
-    #for trial_id, grp in df.groupby("trialDocId"):
+    for trial_id, grp in df.groupby("trialDocId"):
     #for trial_id, grp in [next(iter(df.groupby("trialDocId")))]:
-    for trial_id, grp in list(df.groupby("trialDocId"))[56:65]:
+    #for trial_id, grp in list(df.groupby("trialDocId"))[56:65]:
 
         grp_sorted = grp[['t','x','y']].sort_values('t')
         if grp_sorted['t'].iloc[0] > 0:
@@ -32,10 +32,10 @@ def main():
             grp_sorted = pd.concat([first_t, grp_sorted], ignore_index=True)
 
         #plot_trial_positions(grp_sorted)
-        plot_trial_velocities(calculate_velocity(grp_sorted))
+        #plot_trial_velocities(calculate_velocity(grp_sorted))
         tempo = analyze_trial_positions(grp_sorted)
         #print(f"Trial {trial_id} analyzed: {tempo.keys()}")
-        plot_trial_velocities(tempo['uniform'], tempo['segments'])
+        #plot_trial_velocities(tempo['uniform'], tempo['segments'])
         #print(f'Segments: {len(tempo["segments"]) if tempo["segments"] is not None else 0} -- {tempo["segments"]}')
         segs = tempo['segments'].copy()
         kinems = tempo['uniform'].copy()
@@ -47,7 +47,7 @@ def main():
         kinems.insert(0, "trialDocId", trial_id)
         seg_rows.append(segs)
         kinematic_rows.append(kinems)
-    return
+    #return
     if seg_rows:
         seg_all = pd.concat(seg_rows, ignore_index=True)
         seg_all.to_parquet(up.SEGMENTS_FILE, index=False)
