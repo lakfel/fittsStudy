@@ -31,7 +31,7 @@ class Thresholds:
 
     # Merge heuristic
     merge_midpoint_ratio: float = 0.90  # 90% of extrapolated peaks
-    merge_max_gap_ms: int = 40          # only consider merges if gap between segments <= this
+    merge_max_gap_ms: int = 5          # only consider merges if gap between segments <= this
 
 @dataclass
 class ResampleCfg:

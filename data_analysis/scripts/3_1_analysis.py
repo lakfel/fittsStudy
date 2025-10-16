@@ -49,7 +49,14 @@ for idx, trial in tqdm(df_trials.iterrows(), total=len(df_trials)):
         'clickUp': get_movement_type(times['clickUp'])
     }
 
+
     for time_type  in ['reaching', 'clickDown', 'clickUp']:
+        movement_type_sum = 'rapid' if 'rapid' in movement_types[time_type] else movement_types[time_type]
+        sucess_type = 'fail'
+        if len(out_times) < len(reaching_times):
+            sucess_type = 'success +1 reach'
+            if len(reaching_times) == 1:
+                sucess_type = 'success no outs'
         results.append({
             'participantId': participant_id,
             'event': time_type,
@@ -63,6 +70,8 @@ for idx, trial in tqdm(df_trials.iterrows(), total=len(df_trials)):
             'outs_count': len(out_times),
             'indication': trial['indication'],
             'movement_type_reach': movement_types[time_type],
+            'movement_type_sum': movement_type_sum,
+            'sucess_type': sucess_type
         })
 
 # Convertir a DataFrame
@@ -72,6 +81,7 @@ df_results = pd.DataFrame(results)
 grouped = df_results.groupby([
     'event',
     'movement_type_reach',
+    'movement_type_sum',
     'ID',
     'A',
     'W',
@@ -79,9 +89,10 @@ grouped = df_results.groupby([
     'buffer',
     'reaching_count',
     'outs_count',
-    'indication'
+    'indication',
+    'sucess_type'
 ]).size().reset_index(name='count')
 
 # Guardar resultados
 grouped.to_csv(ANALYSIS_FILE_1, index=False)
-print(grouped.head(40))
+#print(grouped.head(40))
