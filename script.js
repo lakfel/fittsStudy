@@ -1,12 +1,167 @@
 
+// UI State constants
+const UI_STATES = {
+  START_SCREEN: 'START_SCREEN',
+  SHOWING_INSTRUCTIONS: 'SHOWING_INSTRUCTIONS',
+  EXPERIMENT_PRE_START: 'EXPERIMENT_PRE_START',
+  EXPERIMENT_RUNNING: 'EXPERIMENT_RUNNING',
+  EXPERIMENT_FINISHED: 'EXPERIMENT_FINISHED'
+};
+
+// Function to get URL parameters from Prolific
+function getProlificParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    sessionId: urlParams.get('SESSION_ID') || null,
+    studyId: urlParams.get('STUDY_ID') || null,
+    prolificPid: urlParams.get('PROLIFIC_PID') || null
+  };
+}
+
+// Function to detect if user is likely using a trackpad
+function detectTrackpad() {
+  return new Promise((resolve) => {
+    let detectionCount = 0;
+    let trackpadCount = 0;
+    let mouseCount = 0;
+    const minSamples = 3; // Necesitamos al menos 3 eventos de scroll para confirmar
+    
+    const wheelHandler = (e) => {
+      let isTrackpad = false;
+      
+      // Método 1: Comparar wheelDeltaY con deltaY
+      if (e.wheelDeltaY) {
+        if (e.wheelDeltaY === (e.deltaY * -3)) {
+          isTrackpad = true;
+        }
+      }
+      // Método 2: Verificar deltaMode (0 = píxeles, típico de trackpad)
+      else if (e.deltaMode === 0) {
+        isTrackpad = true;
+      }
+      
+      detectionCount++;
+      if (isTrackpad) {
+        trackpadCount++;
+      } else {
+        mouseCount++;
+      }
+      
+      console.log(`Detection ${detectionCount}: ${isTrackpad ? 'Trackpad' : 'Mouse'} (Trackpad: ${trackpadCount}, Mouse: ${mouseCount})`);
+      
+      // Después de varios eventos, tomar decisión
+      if (detectionCount >= minSamples) {
+        cleanup();
+        const result = trackpadCount > mouseCount;
+        console.log(`Final result: ${result ? 'Trackpad' : 'Mouse'} detected (${trackpadCount}/${detectionCount} trackpad events)`);
+        resolve(result);
+      }
+    };
+    
+    const cleanup = () => {
+      document.removeEventListener('wheel', wheelHandler);
+      document.removeEventListener('mousewheel', wheelHandler);
+      document.removeEventListener('DOMMouseScroll', wheelHandler);
+    };
+    
+    // Escuchar múltiples tipos de eventos de scroll para compatibilidad
+    document.addEventListener('wheel', wheelHandler, { passive: true });
+    document.addEventListener('mousewheel', wheelHandler, { passive: true });
+    document.addEventListener('DOMMouseScroll', wheelHandler, { passive: true });
+    
+    // Timeout de 8 segundos - si no hay scroll, asumir mouse
+    setTimeout(() => {
+      if (detectionCount < minSamples) {
+        cleanup();
+        console.log('Timeout: Not enough scroll events, defaulting to mouse');
+        resolve(false);
+      }
+    }, 8000);
+  });
+}
+
+// Analizar patrón de movimiento para detectar trackpad
+function analyzeMovementPattern(samples, hasTouch) {
+  if (samples.length < 5) return false;
+  
+  // Calcular características del movimiento
+  let avgSpeed = 0;
+  let speedVariance = 0;
+  let smallMovements = 0;
+  let totalDistance = 0;
+  
+  for (let i = 1; i < samples.length; i++) {
+    avgSpeed += samples[i].speed;
+    totalDistance += samples[i].distance;
+    
+    // Trackpads tienen muchos movimientos pequeños
+    if (samples[i].distance < 2 && samples[i].dt < 20) {
+      smallMovements++;
+    }
+  }
+  
+  avgSpeed /= (samples.length - 1);
+  
+  // Calcular varianza de velocidad
+  for (let i = 1; i < samples.length; i++) {
+    speedVariance += Math.pow(samples[i].speed - avgSpeed, 2);
+  }
+  speedVariance /= (samples.length - 1);
+  
+  const stdDev = Math.sqrt(speedVariance);
+  const coefficientOfVariation = avgSpeed > 0 ? stdDev / avgSpeed : 0;
+  const smallMovementRatio = smallMovements / (samples.length - 1);
+  
+  console.log('Movement analysis:', {
+    avgSpeed,
+    stdDev,
+    coefficientOfVariation,
+    smallMovementRatio,
+    totalDistance,
+    hasTouch
+  });
+  
+  // Trackpads típicamente tienen:
+  // - Mayor proporción de movimientos pequeños (> 0.3)
+  // - Movimiento más suave (menor coeficiente de variación < 1.5)
+  // - Capacidad táctil en el dispositivo
+  
+  const trackpadScore = 
+    (smallMovementRatio > 0.3 ? 1 : 0) +
+    (coefficientOfVariation < 1.5 ? 1 : 0) +
+    (hasTouch ? 1 : 0) +
+    (totalDistance < 500 ? 1 : 0); // Movimientos más limitados
+  
+  console.log('Trackpad score:', trackpadScore, '/ 4');
+  
+  // Si tiene 2 o más indicadores de trackpad, probablemente es trackpad
+  return trackpadScore >= 2;
+}
+
+// Function to get Prolific return URL
+function getProlificReturnUrl() {
+  const params = getProlificParams();
+  if (params.studyId && params.sessionId) {
+    return `https://app.prolific.com/submissions/complete?cc=RETURNED`;
+  }
+  return null;
+}
+
+// Get Prolific parameters
+const prolificParams = getProlificParams();
+console.log('Prolific parameters:', prolificParams);
+
+// Device detection state
+let deviceCheckPassed = false;
+
 // Pariticipant ID
-let participantId = crypto.randomUUID();
+let participantId = prolificParams.prolificPid || crypto.randomUUID();
 
 let record_results = false; // Si se deben guardar los resultados en Firestore
 
 //Experiment variables
 const indicationMethods = ["click", "barspace"];
-//const indicationMethods = ["click"];
+
 
 const feedbacks = [
     {feedbackMode : "none",
@@ -72,7 +227,13 @@ let state = {
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
     zoom: window.devicePixelRatio,
-    feedbackConditions: []
+    feedbackConditions: [],
+    // Prolific parameters
+    prolificSessionId: prolificParams.sessionId,
+    prolificStudyId: prolificParams.studyId,
+    prolificPid: prolificParams.prolificPid,
+    // Device information
+    deviceType: null // Will be set to 'mouse' or 'trackpad'
   },
   set: {
     targets: [],
@@ -82,7 +243,7 @@ let state = {
     indication: null,
     randomStart: 0,
   },
-  UIstate: 0 // 0: start button, 1: presenting instructions, 2: experiment running pre start, 3: experiment runing, 4: experiment finished
+  UIstate: UI_STATES.START_SCREEN
 }
 
 
@@ -110,7 +271,7 @@ canvas.addEventListener("mousemove", (e) => {
       y: e.offsetY, 
       time: now  - currentTrialData.movementStartTime
     };
-    if (state.UIstate !== 3) return; 
+    if (state.UIstate !== UI_STATES.EXPERIMENT_RUNNING) return; 
     if (trackingStartTime && now - trackingStartTime > 6000) return;
     currentTrialData.cursorPositions.push(currentMousePosition);
     checkReaching(currentMousePosition);
@@ -161,17 +322,29 @@ canvas.addEventListener("click", (e) => {
   const clickX = e.clientX - rect.left;
   const clickY = e.clientY - rect.top;
 
-  if (state.UIstate == 0) {
+  // Handle return button click on trackpad warning screen
+  if (window.returnButton && 
+      clickX >= window.returnButton.x && 
+      clickX <= window.returnButton.x + window.returnButton.width &&
+      clickY >= window.returnButton.y && 
+      clickY <= window.returnButton.y + window.returnButton.height) {
+    if (window.returnButton.url) {
+      window.location.href = window.returnButton.url;
+    }
+    return;
+  }
+
+  if (state.UIstate === UI_STATES.START_SCREEN) {
     if (isInsideCircle(clickX, clickY, startButton)) {
         startExperiment();
-        state.UIstate = 1; // Cambiar estado a presentando instrucciones
+        state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
         drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
     }
     return;
   }
-  else if (state.UIstate == 1) {
+  else if (state.UIstate === UI_STATES.SHOWING_INSTRUCTIONS) {
     if (isInsideCircle(clickX, clickY, startButton)) {
-        state.UIstate = 2; // Cambiar estado a experiment running pre start
+        state.UIstate = UI_STATES.EXPERIMENT_PRE_START;
         startCursorTracking();
         draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, true);
     }
@@ -186,10 +359,41 @@ function isInsideCircle(x, y, circle) {
   return Math.sqrt(dx * dx + dy * dy) <= circle.radius;
 }
 
+// Check device and start experiment or show warning
+async function checkDeviceAndStart() {
+  // Show a temporary message asking user to scroll
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "24px Arial";
+  ctx.fillStyle = "black";
+  ctx.textAlign = "center";
+  ctx.fillText("Please scroll with your mouse wheel...", canvas.width / 2, canvas.height / 2 - 20);
+  ctx.font = "18px Arial";
+  ctx.fillStyle = "#666";
+  ctx.fillText("Scroll up and down a few times", canvas.width / 2, canvas.height / 2 + 20);
+  
+  const isTrackpad = await detectTrackpad();
+  
+  // Save device type to state
+  state.participant.deviceType = isTrackpad ? 'trackpad' : 'mouse';
+  console.log('Device detected:', state.participant.deviceType);
+  
+  if (isTrackpad && prolificParams.prolificPid) {
+    // Show trackpad warning with return button only for Prolific users
+    const returnUrl = getProlificReturnUrl();
+    drawTrackpadWarning(canvas, ctx, returnUrl);
+  } else {
+    // Device check passed or not from Prolific, continue normally
+    deviceCheckPassed = true;
+    startExperiment();
+    state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
+    drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
+  }
+}
+
 
 async function startExperiment() {
 
-    state.UIstate = 1; // Presenting instructions
+    state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
   
     state.experiment.currentBlock = 0;
     state.set.currentTrial = 0;
@@ -215,11 +419,11 @@ async function startExperiment() {
 
 
 function isInExperimentRunningState() {
-  return state.UIstate === 3 || state.UIstate === 2;
+  return state.UIstate === UI_STATES.EXPERIMENT_RUNNING || state.UIstate === UI_STATES.EXPERIMENT_PRE_START;
 }
 
 canvas.addEventListener("mousedown", (e) => {
-     if(!isInExperimentRunningState()) return;
+    if(!isInExperimentRunningState()) return;
     if(state.experiment.feedbackConditions[state.experiment.currentCondition].indication === "click") {
         indicationDown();
     }
@@ -265,7 +469,7 @@ function indicationUp() {
     const threshold = Math.max(getCurrentTarget().radius * 3, minThreshold);
     if(distance >= threshold) return; // No hacer nada si el cursor está muy lejos del target
 
-    if(state.UIstate == 3) { //Only during experiment
+    if(state.UIstate === UI_STATES.EXPERIMENT_RUNNING) {
         
         currentTrialData.clickUpTime = performance.now() - currentTrialData.movementStartTime;
         
@@ -287,7 +491,7 @@ function indicationUp() {
     else
     {
         if(distance <= getCurrentTarget().radius) {
-            state.UIstate = 3;
+            state.UIstate = UI_STATES.EXPERIMENT_RUNNING;
         }
         else{
             return;
@@ -338,7 +542,7 @@ function indicationUp() {
 
 
 async function endExperiment() {
-  state.UIstate = 5; // Done
+  state.UIstate = UI_STATES.EXPERIMENT_FINISHED;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.font = "24px Arial";
   ctx.fillStyle = "black";
@@ -361,7 +565,7 @@ function nextTrial() {
   state.set.currentTrial++;
 
   if (state.set.currentTrial >= trialsPerCombination) { // Set finished
-    state.UIstate = 2;
+    state.UIstate = UI_STATES.EXPERIMENT_PRE_START;
     state.experiment.currentBlock++; // Move to the next Block
     state.set.currentTrial = 0;
     if (state.experiment.currentBlock >= state.experiment.blocks.length) {
@@ -372,7 +576,7 @@ function nextTrial() {
         return;
       }
       generateBlocks();
-      state.UIstate = 1;
+      state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
       drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
       return;
     }
@@ -382,7 +586,7 @@ function nextTrial() {
   }
 
   stopCursorTracking();
-  draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.UIstate === 2);
+  draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.UIstate === UI_STATES.EXPERIMENT_PRE_START);
 
   startCursorTracking();
 }

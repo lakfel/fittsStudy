@@ -5,7 +5,6 @@ let velocityChart = null;
 let velocityChart2 = null;
 
 
-
 function drawInstructions(canvas, ctx, feedback, indication) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
