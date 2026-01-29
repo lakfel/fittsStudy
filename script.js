@@ -22,7 +22,7 @@ function getProlificParams() {
 function getProlificReturnUrl() {
   const params = getProlificParams();
   if (params.studyId && params.sessionId) {
-    return `https://app.prolific.com/submissions/complete?cc=RETURNED`;
+    return `https://app.prolific.com/submissions/complete?cc=C1BLMG3C`;
   }
   return null;
 }
@@ -104,7 +104,8 @@ function resetCurrentTrialData() {
     isFirstTrial: false,
     preFirstTargetPosition: { x: -1, y: -1 },
     indicationsDown: [],
-    indicationsUp: []
+    indicationsUp: [],
+    wrongIndications: []
   };  
 } 
 
@@ -316,6 +317,13 @@ canvas.addEventListener("mousedown", (e) => {
     currentTrialData.cursorPositions.push(currentMousePosition);
     if(state.experiment.feedbackConditions[state.experiment.currentCondition].indication === "click") {
         indicationDown();
+    } 
+    else {
+        currentTrialData.wrongIndications.push({ 
+            x: currentMousePosition.x,
+            y: currentMousePosition.y,
+            time: performance.now() -currentTrialData.movementStartTime
+        });
     }
 });
 document.addEventListener("keydown", function(e) {
@@ -334,6 +342,13 @@ document.addEventListener("keydown", function(e) {
             indicationDown();
         }
     }
+    else {
+        currentTrialData.wrongIndications.push({ 
+            x: currentMousePosition.x,
+            y: currentMousePosition.y,
+            time: performance.now() -currentTrialData.movementStartTime
+        });
+    }
 });
 
 function indicationDown() {
@@ -350,6 +365,7 @@ function indicationDown() {
 
 canvas.addEventListener("mouseup", (e) => {
     if(!isInExperimentRunningState()) return;
+    if(currentTrialData.indicationsDown.length === 0) return; // No ha habido un indicationDown previo
     currentMousePosition = {
       x: e.offsetX,
       y: e.offsetY, 
@@ -362,6 +378,7 @@ canvas.addEventListener("mouseup", (e) => {
 });
 
 document.addEventListener("keyup", function(e) {
+    if(currentTrialData.indicationsDown.length === 0) return; // No ha habido un indicationDown previo
     if (e.code === "Space" || e.key === " " || e.key === "Spacebar") {
         if(state.experiment.feedbackConditions[state.experiment.currentCondition].indication === "barspace") {
             indicationUp();
@@ -395,7 +412,7 @@ function indicationUp() {
   currentTrialData.indicationsUp.push({ 
         isValid: isValidIndication(),
         inTarget: inTargetReached(), 
-        time: performance.now() -currentTrialData.movementStartTime,
+        time: performance.now() - currentTrialData.movementStartTime,
         x: currentMousePosition.x,
         y: currentMousePosition.y
     });  
@@ -483,9 +500,6 @@ async function endExperiment() {
   }
 }
 
-
-
-    
 
 function nextTrial() {
 

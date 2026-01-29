@@ -50,8 +50,11 @@ async function initializeParticipant(participant) {
       feedbackConditions: participant.feedbackConditions,
       screenWidth: participant.screenWidth,
       screenHeight: participant.screenHeight,
-      zoom: participant.zoom
-
+      zoom: participant.zoom,
+      isProlific: participant.prolificParams.sessionId ? true : false,
+      prolificPid: participant.prolificParams.prolificPid ? participant.prolificParams.prolificPid : "None",
+      prolificSessionId: participant.prolificParams.sessionId ? participant.prolificParams.sessionId : "None",
+      prolificStudyId: participant.prolificParams.studyId ? participant.prolificParams.studyId : "None",
     });
 
     console.log("Participante inicializado:", participantId, "orderIndex:", participant.orderIndex);
