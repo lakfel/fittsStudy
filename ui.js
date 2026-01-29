@@ -9,7 +9,7 @@ function drawInstructions(canvas, ctx, feedback, indication) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.arc(startButton.x, startButton.y, startButton.radius, 0, Math.PI * 2);
-    ctx.fillStyle = "#007BFF";  //dra color azul
+    ctx.fillStyle = startButton.reached ? "#28a745" : "#007BFF";  //dra color azul
     ctx.fill();
     ctx.fillStyle = "white";
     ctx.font = "20px Arial";
@@ -23,9 +23,9 @@ function drawInstructions(canvas, ctx, feedback, indication) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   const instructions = [
-    "New Set of targets",
-    "Feedback : " + feedback,
-    "Selection : " + indication
+    "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.",
+    "Feedback : " + feedback ,
+    "Selection : " + indication + ("click" === indication ? "🖱" : "⌨")
   ];
   
   let y = startButton.y + startButton.radius + 30;
@@ -51,7 +51,8 @@ function drawInstructions(canvas, ctx, feedback, indication) {
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText(`Feedback: ${feedback} `, indicatorX + 20,  indicatorY);
-    ctx.fillText(`Selection: ${indication} `, indicatorX + 20,  2* indicatorY);
+    ctx.fillText(`Selection: ${indication + ("click" === indication ? "🖱" : "⌨")}`, indicatorX + 20,  2* indicatorY);
+  
 }
 
 
@@ -59,7 +60,7 @@ function drawStartButton(canvas, ctx, startButton) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.beginPath();
   ctx.arc(startButton.x, startButton.y, startButton.radius, 0, Math.PI * 2);
-  ctx.fillStyle = "#007BFF";  //dra color azul
+  ctx.fillStyle = startButton.reached ? "#28a745" : "#007BFF";  //dra color azul
   ctx.fill();
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
@@ -73,16 +74,20 @@ function drawStartButton(canvas, ctx, startButton) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   const instructions = [
-    "Welcome to the Fitts' Law Game!",
+    "Welcome to this experiment to understand How People Select On-Screen Targets!",
+    "",
     "Your task is to reach the targets as quickly and accurately as possible using the pointer.",
-    "You will need to select using a click or barspace",
-    "according to the conditon displayed in the top-left corner.",
-    "The first target of each set will be YELLOW.",
-    "Timing does NOT start until you reach the yellow target, you can rest with the yellow target.",
-    "After clicking Start, the set will begin.",
-    "The target may or may not change color when reached,",
-    "as shown by the feedback indicator in the top-left corner.",
-    "Make sure the browser zoom is set to 100% for accurate results.",
+    "After reaching the target, you will need to select it using a click 🖱 or barspace ⌨ ",
+    "according to the conditon displayed in start of the set and in the top-left corner.",
+    "",
+    "When reaching the target, this may or may not change color to green depending on the",
+    " feedback condition, also displayed at the start of the set and in the top-left corner.",
+    "",
+    "At the start of each set, click the Start button to begin.",
+    "Timing does NOT start until you click the Start button.",
+    "You may rest between each set before clicking the start button.",
+    "",
+    "Make sure the browser zoom is set to 100%.",
   ];
   let y = startButton.y + startButton.radius + 30;
   for (let line of instructions) {
@@ -131,15 +136,20 @@ function draw(targets, currentIndex, feedbackMode, indication, firstTrial) {
     let color = "gray";
 
     if(currentIndex === index){
-        if(firstTrial){
-          color = "yellow"; // amarillo para el primer trial
-        }
-        else if (t.hit && feedbackMode != "none") {
+        //if(firstTrial){
+        //  color = "yellow"; // amarillo para el primer trial
+        //}
+        //else 
+        if (t.hit && feedbackMode != "none") {
             color = "#28a745" ; // verde si hit, rojo si no
         }
         else {
             color = "#007BFF"; // azul si no hit
         }
+    }
+    else if(t.marked)
+    {
+      color = "lightgray"; // targets ya alcanzados en gris claro
     }
 
     ctx.fillStyle = color;
@@ -164,6 +174,6 @@ function draw(targets, currentIndex, feedbackMode, indication, firstTrial) {
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText(`Feedback: ${feedbackMode} `, indicatorX + 20,  indicatorY);
-    ctx.fillText(`Selection: ${indication} `, indicatorX + 20,  2* indicatorY);
+    ctx.fillText(`Selection: ${indication + ("click" === indication ? "🖱" : "⌨")}`, indicatorX + 20,  2* indicatorY);
 
 }

@@ -1,7 +1,10 @@
 1. Some of the test are having success in false even with reaching but not out times.
     It seems the vartiable sucess is not well defined, maybe we should remove the variable. Specially cuz depending on how to calculate the sucess, is it when clicking down? is it when clicking down? what about if it clicks downg reach the point, got out the point and the click out? Do I care?
+    I really do not understand why is this happening I wil remove the success.
 2. Some of the trials have the same buffer than reaching time
+    -- Probably the movement recorded is too strong, so it enters both at the same time
 3. Probably a good idea attach to the trial also the A and D
+    -- And position
 4. Chage the names of click up and click down to moveup and move down. It changes depending on if it is the mouse or the keyboard
 5. The main focus must be related to the reaching times. Initial analysys
     5.1 counting of reaching, move down, move up times, discriminated by the ID, tipe of feedback, in what type of movement is -- ballistic, correction, pause-- typer of confirmation type.

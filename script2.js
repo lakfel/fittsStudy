@@ -54,7 +54,8 @@ let currentTrialData = {
   A: 0,
   W: 0,
   ID: 0,
-  trialIndex: 0
+  trialIndex: 0,
+  targetPosition: { x: 0, y: 0 }
 };
 
 

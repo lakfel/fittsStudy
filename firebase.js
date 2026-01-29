@@ -17,6 +17,24 @@ async function saveTrialToFirestore(trial, participantId) {
   }
 }
 
+async function savePreTrialToFirestore(trial, participantId) {
+  try {
+
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error("Usuario no autenticado");
+
+
+    await db.collection("fitts_pre_trials").add({
+      participantId,
+      timestamp: new Date().toISOString(),
+      ...trial
+    });
+    console.log("Trial guardado en Firestore");
+  } catch (error) {
+    console.error("Error al guardar en Firestore:", error);
+  }
+}
+
 
 async function initializeParticipant(participant) {
   try {
