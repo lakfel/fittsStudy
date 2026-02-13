@@ -51,9 +51,9 @@ async function initializeParticipant(participant) {
       screenWidth: participant.screenWidth,
       screenHeight: participant.screenHeight,
       zoom: participant.zoom,
-      isProlific: participant.prolificParams.sessionId ? true : false,
-      prolificPid: participant.prolificParams.prolificPid ? participant.prolificParams.prolificPid : "None",
-      prolificSessionId: participant.prolificParams.sessionId ? participant.prolificParams.sessionId : "None",
+      isProlific: participant.sessionId ? true : false,
+      prolificPid: participant.prolificPid ? participant.prolificParams.prolificPid : "None",
+      prolificSessionId: participant.sessionId ? participant.prolificParams.sessionId : "None",
       prolificStudyId: participant.prolificParams.studyId ? participant.prolificParams.studyId : "None",
     });
 
