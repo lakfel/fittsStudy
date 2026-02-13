@@ -22,17 +22,20 @@ def fetch_collection(client, name):
     return pd.DataFrame(rows)
 
 def main():
-    df_participants = fetch_collection(client, "participants")
+    #df_participants = fetch_collection(client, "participants")
     df_trials = fetch_collection(client, "fitts_trials")
+    df_pre_trials = fetch_collection(client, "fitts_pre_trials")
+
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    df_participants.to_parquet(OUT_DIR / f"participants_{ts}.parquet", index=False)
+    #df_participants.to_parquet(OUT_DIR / f"participants_{ts}.parquet", index=False)
     df_trials.to_parquet(OUT_DIR / f"trials_{ts}.parquet", index=False)
+    df_pre_trials.to_parquet(OUT_DIR / f"pre_trials_{ts}.parquet", index=False)
 
     # Si guardaste posiciones dentro de trials como arrays largos, puedes
     # reventarlas luego en 01_flatten_trials.py para una tabla positions
 
-    print("OK:", len(df_participants), "participants;", len(df_trials), "trials")
+    #print("OK:", len(df_participants), "participants;", len(df_trials), "trials")
 
 if __name__ == "__main__":
     main()
