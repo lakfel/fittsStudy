@@ -51,9 +51,10 @@ def main():
     if seg_rows:
         seg_all = pd.concat(seg_rows, ignore_index=True)
         seg_all.to_parquet(up.SEGMENTS_FILE, index=False)
-
+        seg_all.to_csv(up.SEGMENTS_FILE_CSV, index=False)
         kins_all = pd.concat(kinematic_rows, ignore_index=True)
         kins_all.to_parquet(up.KINEMATICS_FILE, index = False)
+        kins_all.to_csv(up.KINEMATICS_FILE_CSV, index=False)
 
         #print(f"Saved segments -> {seg_path} ({len(seg_all)} rows)")
     else:

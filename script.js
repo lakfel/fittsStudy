@@ -95,7 +95,9 @@ function resetCurrentTrialData() {
     outTimes: [], // Times when exiting target
     inTarget: false, // Whether currently in target
     inTargetBuffer: false, // Whether currently in buffer 
-    success: false,
+    success: false, // Cursor in target either at indication down or up,
+    sucessUp: false, // Cursor in target at indication up
+    sucessDown: false, // Cursor in target at indication down
     A: 0,
     W: 0,
     ID: 0,
@@ -125,6 +127,7 @@ let state = {
     orderIndex: null,
     screenWidth: window.screen.width,
     screenHeight: window.screen.height,
+    zoomEstimate: window.outerWidth / window.innerWidth,
     zoom: window.devicePixelRatio,
     feedbackConditions: [],
     // Prolific parameters
@@ -432,17 +435,19 @@ function indicationUp() {
     let distance = Math.sqrt(dx * dx + dy * dy);
     if (distance <= getCurrentTarget().radius) {
       currentTrialData.success = true;
+      currentTrialData.successDown = true;
     }
     if (distance <= getCurrentTarget().radius + currentTrialData.buffer) {
       currentTrialData.insideBuffer = true;
     }
   }
-  if(!currentTrialData.success && lastUp.inTarget) {
+  if(lastUp.inTarget) {
     let dx = lastUp.x - getCurrentTarget().x;
     let dy = lastUp.y - getCurrentTarget().y; 
     let distance = Math.sqrt(dx * dx + dy * dy);
     if (distance <= getCurrentTarget().radius) {
       currentTrialData.success = true;
+      currentTrialData.successUp = true;
     } 
     if (distance <= getCurrentTarget().radius + currentTrialData.buffer) {
       currentTrialData.insideBuffer = true;
