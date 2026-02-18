@@ -35,7 +35,7 @@ console.log('Prolific parameters:', prolificParams);
 // Pariticipant ID
 let participantId = prolificParams.prolificPid || crypto.randomUUID();
 
-let record_results = true; // True if results should be recorded
+let record_results = false; // True if results should be recorded
 
 //Experiment variables
 const indicationMethods = ["click", "barspace"];
