@@ -3,9 +3,10 @@
 
 let velocityChart = null;
 let velocityChart2 = null;
+let temporaryMessageTimeoutId = null;
 
 
-function drawInstructions(canvas, ctx, feedback, indication) {
+function drawInstructions(canvas, ctx, feedback, indication, isRepeat = false) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.arc(startButton.x, startButton.y, startButton.radius, 0, Math.PI * 2);
@@ -22,8 +23,11 @@ function drawInstructions(canvas, ctx, feedback, indication) {
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
+
+  let firstLine = isRepeat ? "TOO MANY MISTAKES, Repeat Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin." : "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
+
   const instructions = [
-    "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.",
+    firstLine,
     "Feedback : " + feedback ,
     "Selection : " + indication + ("click" === indication ? "🖱" : "⌨")
   ];
@@ -124,9 +128,26 @@ function drawStartButton(canvas, ctx, startButton) {
 
 }
 
+function drawRepeatMessage(canvas, ctx, startButton) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "red";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Too many misses! Repeating block...", startButton.x, startButton.y + 50);
 
+  ctx.arc(startButton.x, startButton.y, startButton.radius, 0, Math.PI * 2);
+  ctx.fillStyle = "red"; 
+  ctx.fill();
+  ctx.fillStyle = "white";
+  ctx.font = "20px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Repeat", startButton.x, startButton.y)
 
-function draw(targets, currentIndex, feedbackMode, indication, firstTrial) {
+}
+
+function draw(targets, currentIndex, feedbackMode, indication, showingMessage = false) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   targets.forEach((t, index) => {
@@ -140,12 +161,16 @@ function draw(targets, currentIndex, feedbackMode, indication, firstTrial) {
         //  color = "yellow"; // amarillo para el primer trial
         //}
         //else 
+        
         if (t.hit && feedbackMode != "none") {
             color = "#28a745" ; // verde si hit, rojo si no
         }
         else {
             color = "#007BFF"; // azul si no hit
         }
+    }
+    else if(t.missed){
+          color = "#dc3545"; // rojo si missed
     }
     else if(t.marked)
     {
@@ -176,4 +201,16 @@ function draw(targets, currentIndex, feedbackMode, indication, firstTrial) {
     ctx.fillText(`Feedback: ${feedbackMode} `, indicatorX + 20,  indicatorY);
     ctx.fillText(`Selection: ${indication + ("click" === indication ? "🖱" : "⌨")}`, indicatorX + 20,  2* indicatorY);
 
+    if(showingMessage)
+    {
+      ctx.font = "16px Arial";
+      ctx.fillStyle = "red";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Too many misses! ", canvas.width - 20, indicatorY);
+      ctx.fillText("Repeating block...", canvas.width - 20, 2*indicatorY);
+    }
+
 }
+
+

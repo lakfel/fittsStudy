@@ -3,6 +3,7 @@
 const UI_STATES = {
   START_SCREEN: 'START_SCREEN',
   SHOWING_INSTRUCTIONS: 'SHOWING_INSTRUCTIONS',
+  SHOWING_REPEAT_MESSAGE: 'SHOWING_REPEAT_MESSAGE',
   EXPERIMENT_PRE_START: 'EXPERIMENT_PRE_START',
   EXPERIMENT_RUNNING: 'EXPERIMENT_RUNNING',
   EXPERIMENT_FINISHED: 'EXPERIMENT_FINISHED'
@@ -38,15 +39,18 @@ let participantId = prolificParams.prolificPid || crypto.randomUUID();
 let record_results = false; // True if results should be recorded
 
 //Experiment variables
-const indicationMethods = ["click", "barspace"];
+// const indicationMethods = ["click", "barspace"];
 
+const numberOfTargets = 9; // Number of targets in the ring
+
+const indicationMethods = ["click"];
 
 const feedbacks = [
     {feedbackMode : "none",
-      buffer: [0]
+      buffer: [1]
     }, 
     {feedbackMode : "green",
-      buffer: [0, 15]
+      buffer: [1.1, 1.2, 1, 0.9, 0.8]
       //buffer: [0]
     }
 ];
@@ -118,7 +122,10 @@ let state = {
     feedbackConditions: [],
     blocks: [],
     currentBlock: 0,
-    currentCondition: 0
+    currentBlockMisses : 0,
+    currentCondition: 0,
+    currentConditionMisses: 0,
+    isRepeatingBlock: false
   },
   participant: {
     id: participantId,
@@ -191,13 +198,13 @@ canvas.addEventListener("mousemove", (e) => {
 function checkReaching(pos) {
 
     const target = getCurrentTarget(); // Alterna entre los targets del par
-    const buffer = currentTrialData.buffer || 0; // buffer de colisión
+    const buffer = currentTrialData.buffer || 1; // buffer de colisión
     const dx = pos.x - target.x;
     const dy = pos.y - target.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
     
-    if (distance < target.radius + buffer) {
+    if (distance < target.radius * buffer) {
         target.hit = true;
         if(!currentTrialData.inTargetBuffer) {
             currentTrialData.inTargetBuffer = true;
@@ -221,7 +228,7 @@ function checkReaching(pos) {
           currentTrialData.outTimes.push({time: pos.time, x: pos.x, y: pos.y});
         }
     }
-    draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, false);
+    draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, state.experiment.isRepeatingBlock);
 
 }
 
@@ -266,7 +273,7 @@ function pressStartButton() {
   currentTrialData.preFirstTargetPosition = { x: startButton.x, y: startButton.y };
   trackingStartTime = performance.now();
   currentTrialData.movementStartTime = trackingStartTime;
-  draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, true);
+  draw(state.set.targets, getCurrentTargetIndex(), state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, false);
 }
 
 
@@ -359,6 +366,7 @@ function indicationDown() {
     currentTrialData.indicationsDown.push({ 
           isValid: isValidIndication(),
           inTarget: inTargetReached(), 
+          inBuffer: inBufferReached(),
           time: performance.now() -currentTrialData.movementStartTime,
           x: currentMousePosition.x,
           y: currentMousePosition.y
@@ -401,6 +409,12 @@ function inTargetReached() {
     return distance <= getCurrentTarget().radius;
 }
 
+
+function inBufferReached() {
+    const distance = getDistanceCursorFromTarget();
+    return distance <= getCurrentTarget().radius * currentTrialData.buffer;
+}
+
 function isValidIndication() {
     const distance = getDistanceCursorFromTarget();
     const minThreshold = 40; // píxeles mínimos de tolerancia
@@ -415,6 +429,7 @@ function indicationUp() {
   currentTrialData.indicationsUp.push({ 
         isValid: isValidIndication(),
         inTarget: inTargetReached(), 
+        inBuffer: inBufferReached(),
         time: performance.now() - currentTrialData.movementStartTime,
         x: currentMousePosition.x,
         y: currentMousePosition.y
@@ -427,35 +442,20 @@ function indicationUp() {
     return; // if both of the indications are not valid, do nothing
   }
   
-  currentTrialData.success = false
-  currentTrialData.insideBuffer = false;
-  if(lastDown.inTarget) {
-    let dx = lastDown.x - getCurrentTarget().x;
-    let dy = lastDown.y - getCurrentTarget().y; 
-    let distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance <= getCurrentTarget().radius) {
-      currentTrialData.success = true;
-      currentTrialData.successDown = true;
-    }
-    if (distance <= getCurrentTarget().radius + currentTrialData.buffer) {
-      currentTrialData.insideBuffer = true;
-    }
+  currentTrialData.success = lastDown.inTarget || lastUp.inTarget;
+  currentTrialData.insideBuffer = lastDown.inBuffer || lastUp.inBuffer;
+
+
+  // Target missed if indication outside target and buffer
+  // This means that the target can be not marked as missed even when it was, as long as the indication was made inside the buffer. 
+  // This is because the feedback may indicate it was a successful modifying the indication times, which is what we are investigating the effect of.
+  // But we do not want the participant to be penalized if the feedback is misleading and therefore untrust the feedback.
+  getCurrentTarget().missed = !currentTrialData.success && !currentTrialData.insideBuffer; 
+  
+
+  if(getCurrentTarget().missed) {
+   state.experiment.currentBlockMisses++;
   }
-  if(lastUp.inTarget) {
-    let dx = lastUp.x - getCurrentTarget().x;
-    let dy = lastUp.y - getCurrentTarget().y; 
-    let distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance <= getCurrentTarget().radius) {
-      currentTrialData.success = true;
-      currentTrialData.successUp = true;
-    } 
-    if (distance <= getCurrentTarget().radius + currentTrialData.buffer) {
-      currentTrialData.insideBuffer = true;
-    }
-  }
-
-
-
   const block = state.experiment.blocks[state.experiment.currentBlock];
   currentTrialData.A = block.A;
   currentTrialData.W = block.W;
@@ -508,33 +508,55 @@ async function endExperiment() {
 
 function nextTrial() {
 
- 
-  state.set.currentTrial++;
-
-  if (state.set.currentTrial >= trialsPerCombination) { // Set finished
-    state.UIstate = UI_STATES.EXPERIMENT_PRE_START;
-    state.experiment.currentBlock++; // Move to the next Block
+  // If more than 30% of misses in the block, repeat block
+  if(state.experiment.currentBlockMisses >= numberOfTargets * 0.30) 
+  {
+    state.experiment.isRepeatingBlock = true;
+    state.experiment.currentBlockMisses = 0;
     state.set.currentTrial = 0;
-
-    if (state.experiment.currentBlock >= state.experiment.blocks.length) {
-      state.experiment.currentBlock = 0;
-      state.experiment.currentCondition++; // Move to the next Condition
-      if (state.experiment.currentCondition >= state.experiment.feedbackConditions.length) {
-        endExperiment();
-        return;
-      }
-      generateBlocks();
-      state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
-      drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
-      return;
-    }
-    currentTrialData.preFirstTargetPosition = { x: getCurrentTarget().x, y: getCurrentTarget().y };
     const { A, W, feedbackMode, buffer, indication } = state.experiment.blocks[state.experiment.currentBlock];
+    currentTrialData.preFirstTargetPosition = { x: getCurrentTarget().x, y: getCurrentTarget().y };
     generateRingTargets(A, W);
   }
+  else {
 
+    state.set.currentTrial++;
 
-  draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.UIstate === UI_STATES.EXPERIMENT_PRE_START);
+    if (state.set.currentTrial >= trialsPerCombination) { // Set finished
+
+    
+
+      state.experiment.currentConditionMisses += state.experiment.currentBlockMisses;
+      state.UIstate = UI_STATES.EXPERIMENT_PRE_START;
+      state.experiment.currentBlock++; // Move to the next Block
+      state.set.currentTrial = 0;
+
+      if (state.experiment.currentBlock >= state.experiment.blocks.length) {
+
+        if(state.experiment.currentConditionMisses >= amplitudes.length * widths.length * trialsPerCombination * 0.2) {
+
+        
+
+        state.experiment.currentBlock = 0;
+        state.experiment.currentCondition++; // Move to the next Condition
+        if (state.experiment.currentCondition >= state.experiment.feedbackConditions.length) {
+          endExperiment();
+          return;
+        }
+        generateBlocks();
+        state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
+        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
+        return;
+      }
+      currentTrialData.preFirstTargetPosition = { x: getCurrentTarget().x, y: getCurrentTarget().y };
+      const { A, W, feedbackMode, buffer, indication } = state.experiment.blocks[state.experiment.currentBlock];
+      generateRingTargets(A, W);
+    }
+
+  }
+}
+  
+draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.experiment.isRepeatingBlock);
 
   
 }
@@ -565,19 +587,19 @@ function generateBlocks() {
 
 function generateRingTargets(A, W) {
 
-  const N = 9;
+  
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
-  const angleStep = (2 * Math.PI) / N;
+  const angleStep = (2 * Math.PI) / numberOfTargets;
 
 
-  const k = Math.floor(N / 2);
-  const angleToOpposite = (2 * Math.PI * k) / N;
+  const k = Math.floor(numberOfTargets / 2);
+  const angleToOpposite = (2 * Math.PI * k) / numberOfTargets;
   const R = A / (2 * Math.sin(angleToOpposite / 2)); // fórmula clave
 
   state.set.targets = [];
 
-  for (let i = 0; i < N; i++) {
+  for (let i = 0; i < numberOfTargets; i++) {
     const angle = i * angleStep;
     const x = centerX + R * Math.cos(angle);
     const y = centerY + R * Math.sin(angle);
@@ -587,7 +609,8 @@ function generateRingTargets(A, W) {
       y,
       radius: W / 2,
       hit: false,
-      marked: false
+      marked: false,
+      missed : false
     });
   }
   randomStart = Math.floor(Math.random() * 10);
