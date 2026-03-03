@@ -24,7 +24,7 @@ function drawInstructions(canvas, ctx, feedback, indication, isRepeat = false) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
 
-  let firstLine = isRepeat ? "TOO MANY MISTAKES, Repeat Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin." : "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
+  let firstLine = isRepeat ? "You exceeded the maximum number of misses in this condition. Please repeat the set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin." : "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
 
   const instructions = [
     firstLine,
@@ -128,22 +128,41 @@ function drawStartButton(canvas, ctx, startButton) {
 
 }
 
-function drawRepeatMessage(canvas, ctx, startButton) {
+function drawRepeatMessage(canvas, ctx, feedbackMode, indication, startButton){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.font = "16px Arial";
-  ctx.fillStyle = "red";
+  ctx.fillStyle = "black";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("Too many misses! Repeating block...", startButton.x, startButton.y + 50);
-
+  ctx.fillText("You exceeded the maximum number of misses, please repeat the block", startButton.x, startButton.y + 80);
   ctx.arc(startButton.x, startButton.y, startButton.radius, 0, Math.PI * 2);
-  ctx.fillStyle = "red"; 
+  ctx.fillStyle = "#5c0c0c" ;  
   ctx.fill();
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("Repeat", startButton.x, startButton.y)
+  ctx.fillText("Repeat", startButton.x, startButton.y);
+
+  // --- Indicador de feedback en la esquina superior izquierda ---
+  const indicatorX = 30;
+  const indicatorY = 30;
+  const circleRadius = 10;
+
+  // Dibuja círculo
+  ctx.beginPath();
+  ctx.arc(indicatorX, indicatorY, circleRadius, 0, Math.PI * 2);
+  ctx.fillStyle = feedbackMode === "none" ? "#007BFF" : "#28a745";
+  ctx.fill();
+
+
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "black";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillText(`Feedback: ${feedbackMode} `, indicatorX + 20,  indicatorY);
+  ctx.fillText(`Selection: ${indication + ("click" === indication ? "🖱" : "⌨")}`, indicatorX + 20,  2* indicatorY);
+
 
 }
 
@@ -201,7 +220,7 @@ function draw(targets, currentIndex, feedbackMode, indication, showingMessage = 
     ctx.fillText(`Feedback: ${feedbackMode} `, indicatorX + 20,  indicatorY);
     ctx.fillText(`Selection: ${indication + ("click" === indication ? "🖱" : "⌨")}`, indicatorX + 20,  2* indicatorY);
 
-    if(showingMessage)
+    if(showingMessage && false)
     {
       ctx.font = "16px Arial";
       ctx.fillStyle = "red";

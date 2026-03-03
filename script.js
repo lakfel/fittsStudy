@@ -30,20 +30,28 @@ function getProlificReturnUrl() {
 
 // Get Prolific parameters
 const prolificParams = getProlificParams();
+// Pariticipant ID
+let participantId = prolificParams.prolificPid || crypto.randomUUID();
+if (!prolificParams.prolificPid) {
+  document.getElementById("participantID").style.display = "flex";
+  document.getElementById("participantID").textContent = `${participantId}`;
+}
 console.log('Prolific parameters:', prolificParams);
 
 
-// Pariticipant ID
-let participantId = prolificParams.prolificPid || crypto.randomUUID();
 
 let record_results = false; // True if results should be recorded
 
 //Experiment variables
-// const indicationMethods = ["click", "barspace"];
+
 
 const numberOfTargets = 9; // Number of targets in the ring
+const maxErrorRatePerBlock = 0.30; // Maximum error rate per block before repeating
+const maxErrorRatePerCondition = 0.20; // Maximum error rate per condition before repeating the condition
 
-const indicationMethods = ["click"];
+
+const indicationMethods = ["click", "barspace"];
+//const indicationMethods = ["click"];
 
 const feedbacks = [
     {feedbackMode : "none",
@@ -81,6 +89,8 @@ let currentMousePosition = {
     radius: 50,
     reached: false
   };
+
+currentBlockTrials = [];
 
 currentTrialData = {}
 resetCurrentTrialData();
@@ -248,9 +258,8 @@ canvas.addEventListener("click", (e) => {
     }
     return;
   }
-  else if (state.UIstate === UI_STATES.SHOWING_INSTRUCTIONS) {
+  else if (state.UIstate === UI_STATES.SHOWING_INSTRUCTIONS || state.UIstate === UI_STATES.SHOWING_REPEAT_MESSAGE) {
     if (state.set.indication === "click") {
-
       if (isInsideCircle(clickX, clickY, startButton)) {
           pressStartButton();
       }
@@ -265,7 +274,6 @@ function pressStartButton() {
   state.UIstate = UI_STATES.EXPERIMENT_PRE_START;
   const { A, W } = state.experiment.blocks[state.experiment.currentBlock];
   generateRingTargets(A, W);
-
   resetCurrentTrialData();
   currentTrialData.feedbackMode = state.set.feedbackMode; 
   currentTrialData.buffer = state.set.buffer;
@@ -456,6 +464,7 @@ function indicationUp() {
   if(getCurrentTarget().missed) {
    state.experiment.currentBlockMisses++;
   }
+
   const block = state.experiment.blocks[state.experiment.currentBlock];
   currentTrialData.A = block.A;
   currentTrialData.W = block.W;
@@ -466,7 +475,7 @@ function indicationUp() {
   if(state.UIstate === UI_STATES.EXPERIMENT_RUNNING) {
       getCurrentTarget().marked = true;
       currentTrialData.isFirstTrial = false;
-      if(record_results) saveTrialToFirestore(currentTrialData, state.participant.id);
+      if(record_results) currentBlockTrials.push(JSON.parse(JSON.stringify(currentTrialData))); //saveTrialToFirestore(currentTrialData, state.participant.id);
   }
   else
   {
@@ -509,54 +518,58 @@ async function endExperiment() {
 function nextTrial() {
 
   // If more than 30% of misses in the block, repeat block
-  if(state.experiment.currentBlockMisses >= numberOfTargets * 0.30) 
-  {
-    state.experiment.isRepeatingBlock = true;
-    state.experiment.currentBlockMisses = 0;
-    state.set.currentTrial = 0;
-    const { A, W, feedbackMode, buffer, indication } = state.experiment.blocks[state.experiment.currentBlock];
-    currentTrialData.preFirstTargetPosition = { x: getCurrentTarget().x, y: getCurrentTarget().y };
-    generateRingTargets(A, W);
-  }
-  else {
+  
+  //else {
 
     state.set.currentTrial++;
 
-    if (state.set.currentTrial >= trialsPerCombination) { // Set finished
+    if (state.set.currentTrial >= trialsPerCombination) 
+    { // Set finished
 
-    
+      if(state.experiment.currentBlockMisses >= numberOfTargets * maxErrorRatePerBlock) 
+      {
+        indicationMethod = state.experiment.feedbackConditions[state.experiment.currentCondition].indication;
+        fdbackMode = state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode;
+        state.experiment.isRepeatingBlock = true;
+        state.experiment.currentBlockMisses = 0;
+        state.set.currentTrial = 0;
+        state.UIstate = UI_STATES.SHOWING_REPEAT_MESSAGE;
+        drawRepeatMessage(canvas, ctx, fdbackMode, indicationMethod, startButton);
+        return;
+      }
+      
+      if(record_results) saveTrialsToFirestore(currentBlockTrials, state.participant.id);
 
       state.experiment.currentConditionMisses += state.experiment.currentBlockMisses;
       state.UIstate = UI_STATES.EXPERIMENT_PRE_START;
       state.experiment.currentBlock++; // Move to the next Block
       state.set.currentTrial = 0;
 
-      if (state.experiment.currentBlock >= state.experiment.blocks.length) {
-
-        if(state.experiment.currentConditionMisses >= amplitudes.length * widths.length * trialsPerCombination * 0.2) {
-
-        
-
+      if (state.experiment.currentBlock >= state.experiment.blocks.length) 
+      {
         state.experiment.currentBlock = 0;
-        state.experiment.currentCondition++; // Move to the next Condition
-        if (state.experiment.currentCondition >= state.experiment.feedbackConditions.length) {
-          endExperiment();
+        if(state.experiment.currentConditionMisses >= amplitudes.length * widths.length * trialsPerCombination * maxErrorRatePerCondition) 
+        {
+          state.experiment.currentCondition++; // Move to the next Condition
+          if (state.experiment.currentCondition >= state.experiment.feedbackConditions.length) {
+            endExperiment();
+            return;
+          }
+          generateBlocks();
+          state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
+          drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
           return;
         }
-        generateBlocks();
-        state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
-        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
-        return;
       }
       currentTrialData.preFirstTargetPosition = { x: getCurrentTarget().x, y: getCurrentTarget().y };
       const { A, W, feedbackMode, buffer, indication } = state.experiment.blocks[state.experiment.currentBlock];
       generateRingTargets(A, W);
-    }
+    
 
   }
-}
+
   
-draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.experiment.isRepeatingBlock);
+  draw(state.set.targets, getCurrentTargetIndex(), currentTrialData.feedbackMode, currentTrialData.indication, state.experiment.isRepeatingBlock);
 
   
 }

@@ -17,6 +17,18 @@ async function saveTrialToFirestore(trial, participantId) {
   }
 }
 
+async function saveTrialsToFirestore(trials, participantId) {
+  try {
+
+    for (const trial of trials) {
+      saveTrialToFirestore(trial, participantId);
+    }
+    console.log("Trials guardados en Firestore");
+  } catch (error) {
+    console.error("Error al guardar en Firestore:", error);
+  }
+}
+
 async function savePreTrialToFirestore(trial, participantId) {
   try {
 
