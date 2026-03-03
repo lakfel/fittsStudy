@@ -4,9 +4,14 @@
 let velocityChart = null;
 let velocityChart2 = null;
 let temporaryMessageTimeoutId = null;
+let showingRepeatMessageCondition = false;
 
+function drawInstructions(canvas, ctx, feedback, indication, isRepeat = null ) {
 
-function drawInstructions(canvas, ctx, feedback, indication, isRepeat = false) {
+    if(isRepeat !== null) {
+      showingRepeatMessageCondition = isRepeat;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.arc(startButton.x, startButton.y, startButton.radius, 0, Math.PI * 2);
@@ -24,7 +29,7 @@ function drawInstructions(canvas, ctx, feedback, indication, isRepeat = false) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
 
-  let firstLine = isRepeat ? "You exceeded the maximum number of misses in this condition. Please repeat the set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin." : "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
+  let firstLine = showingRepeatMessageCondition ? "You exceeded the maximum number of misses in this condition. Please repeat the set of targets." : "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
 
   const instructions = [
     firstLine,
@@ -166,7 +171,7 @@ function drawRepeatMessage(canvas, ctx, feedbackMode, indication, startButton){
 
 }
 
-function draw(targets, currentIndex, feedbackMode, indication, showingMessage = false) {
+function draw(targets, currentIndex, feedbackMode, indication) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   targets.forEach((t, index) => {
@@ -220,15 +225,7 @@ function draw(targets, currentIndex, feedbackMode, indication, showingMessage = 
     ctx.fillText(`Feedback: ${feedbackMode} `, indicatorX + 20,  indicatorY);
     ctx.fillText(`Selection: ${indication + ("click" === indication ? "🖱" : "⌨")}`, indicatorX + 20,  2* indicatorY);
 
-    if(showingMessage && false)
-    {
-      ctx.font = "16px Arial";
-      ctx.fillStyle = "red";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      ctx.fillText("Too many misses! ", canvas.width - 20, indicatorY);
-      ctx.fillText("Repeating block...", canvas.width - 20, 2*indicatorY);
-    }
+
 
 }
 
