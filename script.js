@@ -28,6 +28,11 @@ function getProlificReturnUrl() {
   return null;
 }
 
+
+
+
+
+
 // Get Prolific parameters
 const prolificParams = getProlificParams();
 // Pariticipant ID
@@ -38,6 +43,14 @@ if (!prolificParams.prolificPid) {
 }
 console.log('Prolific parameters:', prolificParams);
 
+const latinSquare6 = [ 
+   [0, 1, 5, 2, 4, 3],
+   [1, 2, 0, 3, 5, 4],
+   [2, 3, 1, 4, 0, 5],
+   [3, 4, 2, 5, 1, 0],
+   [4, 5, 3, 0, 2, 1],
+   [5, 0, 4, 1, 3, 2]
+ ];
 
 
 let record_results = true; // True if results should be recorded
@@ -55,11 +68,22 @@ const indicationMethods = ["click", "barspace"];
 
 const feedbacks = [
     {feedbackMode : "none",
-      buffer: [1]
+      buffer: 1
     }, 
     {feedbackMode : "green",
-      buffer: [1.1, 1.2, 1, 0.9, 0.8]
-      //buffer: [0]
+      buffer: 1
+    }, 
+    {feedbackMode : "green",
+      buffer: 1.1
+    }, 
+    {feedbackMode : "green",
+      buffer: 1.2
+    }, 
+    {feedbackMode : "green",
+      buffer: 0.9
+    }, 
+    {feedbackMode : "green",
+      buffer: 0.8
     }
 ];
 
@@ -295,7 +319,12 @@ function isInsideCircle(x, y, circle) {
 
 
 
-async function startExperiment() {
+async function startExperiment() 
+{
+    document.getElementById("participantID").style.display = "none";
+    document.getElementById("conditionSelector").style.display = "none";
+
+    state.participant.orderIndex = document.getElementById("conditionSelector").value;
 
     state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
   
@@ -303,13 +332,9 @@ async function startExperiment() {
     state.set.currentTrial = 0;
     state.experiment.currentCondition = 0;
 
-    let numberOfConditions = 0;
-    for (let feedback of feedbacks) {
-      numberOfConditions += feedback.buffer.length;
-    }
-    numberOfConditions *= indicationMethods.length;
+    let numberOfConditions = feedbacks.length *indicationMethods.length;
 
-    state.participant.orderIndex = Math.floor(Math.random() * numberOfConditions);
+    //state.participant.orderIndex = Math.floor(Math.random() * numberOfConditions);
     state.experiment.feedbackConditions = generateConditions(state.participant.orderIndex);
     state.participant.feedbackConditions = state.experiment.feedbackConditions;
 
@@ -653,19 +678,18 @@ function getCurrentTarget() {
 
 
 function generateConditions(orderIndex) {
-  feedbackConditions = [];
-  let indicationConditions = shuffleArray(indicationMethods);
-  for (let i = 0; i < indicationConditions.length; i++) {
-    const indication = indicationConditions[i];
-    for (let feedback of feedbacks) {
-      for (let buf of feedback.buffer) {
-        feedbackConditions.push({ feedbackMode: feedback.feedbackMode, buffer: buf, indication: indication });
-      }
+
+  let feedbackConditions = [];
+  for(let order of latinSquare6[orderIndex]) {
+    let indicationConditions = shuffleArray(indicationMethods);
+    for(let indication of indicationConditions) {
+      feedbackConditions.push({
+          feedbackMode: feedbacks[order].feedbackMode, 
+          buffer: feedbacks[order].buffer, 
+          indication: indication }
+        );
     }
   }
-
-  const N = feedbackConditions.length;
-  feedbackConditions = [...Array(N)].map((_, i) => feedbackConditions[(i + orderIndex) % N]);
 
   return feedbackConditions;
 

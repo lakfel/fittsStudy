@@ -22,13 +22,24 @@
   </head>
 <body>
 
-<p id="participantID" style="display: flex; flex-direction: column; align-items: center; margin-top: 20px; color: #f0f0f0;">
 
-</p>
-  <!--h1>Fitts' Law Experiment</h1-->
+<!--h1>Fitts' Law Experiment</h1-->
 
   <canvas style="align-self: center;" id="experimentCanvas" width="800" height="800">
   </canvas>
+<p id="participantID" style="display: flex; flex-direction: column; align-items: center; margin-top: 20px; color: #333;">
+</p>
+<select id="conditionSelector" value="0" style="display: flex; color: #333; margin-top: 10px;">
+  <option value="0">0</option>
+  <option value="1">1</option>
+  <option value="2">2</option>
+  <option value="3">3</option>
+  <option value="4">4</option>
+  <option value="5">5</option>
+</select>
+
+
+
   <button style = "display: none;" onclick="downloadCSV()">Download Results</button>
 <!-- Firebase App + Firestore (compat) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
