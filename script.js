@@ -52,6 +52,17 @@ const latinSquare6 = [
    [5, 0, 4, 1, 3, 2]
  ];
 
+const latinSquare8 = [  
+  [0, 1, 7, 2, 6, 3, 5, 4],
+  [1, 2, 0, 3, 7, 4, 6, 5],
+  [2, 3, 1, 4, 0, 5, 7, 6],
+  [3, 4, 2, 5, 1, 6, 0, 7],
+  [4, 5, 3, 6, 2, 7, 1, 0],
+  [5, 6, 4, 7, 3, 0, 2, 1],
+  [6, 7, 5, 0, 4, 1, 3, 2],
+  [7, 0, 6, 1, 5, 2, 4, 3]
+];
+
 
 let record_results = true; // True if results should be recorded
 
@@ -63,8 +74,8 @@ const maxErrorRatePerBlock = 0.40; // Maximum error rate per block before repeat
 const maxErrorRatePerCondition = 0.30; // Maximum error rate per condition before repeating the condition
 
 
-const indicationMethods = ["click", "barspace"];
-//const indicationMethods = ["click"];
+//const indicationMethods = ["click", "barspace"];
+const indicationMethods = ["click"];
 
 const feedbacks = [
     {feedbackMode : "none",
@@ -80,10 +91,16 @@ const feedbacks = [
       buffer: 1.2
     }, 
     {feedbackMode : "green",
+      buffer: 1.3
+    },
+    {feedbackMode : "green",
       buffer: 0.9
     }, 
     {feedbackMode : "green",
       buffer: 0.8
+    },
+    {feedbackMode : "green",
+      buffer: 0.7
     }
 ];
 
@@ -213,7 +230,7 @@ canvas.addEventListener("mousemove", (e) => {
         else {
           startButton.reached = false;
         }
-        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
+        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, state.experiment.currentCondition);
         return;
       }
       else {
@@ -277,7 +294,7 @@ canvas.addEventListener("click", (e) => {
     if (isInsideCircle(clickX, clickY, startButton)) {
         startExperiment();
         state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
-        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication);
+        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, state.experiment.currentCondition);
     }
     return;
   }
@@ -594,7 +611,7 @@ function nextTrial()
         }
         generateBlocks();
         state.UIstate = UI_STATES.SHOWING_INSTRUCTIONS;
-        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, needRepeat);
+        drawInstructions(canvas, ctx, state.experiment.feedbackConditions[state.experiment.currentCondition].feedbackMode, state.experiment.feedbackConditions[state.experiment.currentCondition].indication, state.experiment.currentCondition, needRepeat);
         return;
         
       }
@@ -680,7 +697,8 @@ function getCurrentTarget() {
 function generateConditions(orderIndex) {
 
   let feedbackConditions = [];
-  for(let order of latinSquare6[orderIndex]) {
+  //for(let order of latinSquare6[orderIndex]) {
+  for(let order of latinSquare8[orderIndex]) {
     let indicationConditions = shuffleArray(indicationMethods);
     for(let indication of indicationConditions) {
       feedbackConditions.push({

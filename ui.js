@@ -6,7 +6,7 @@ let velocityChart2 = null;
 let temporaryMessageTimeoutId = null;
 let showingRepeatMessageCondition = false;
 
-function drawInstructions(canvas, ctx, feedback, indication, isRepeat = null ) {
+function drawInstructions(canvas, ctx, feedback, indication, order, isRepeat = null ) {
 
     if(isRepeat !== null) {
       showingRepeatMessageCondition = isRepeat;
@@ -29,10 +29,11 @@ function drawInstructions(canvas, ctx, feedback, indication, isRepeat = null ) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
 
-  let firstLine = showingRepeatMessageCondition ? "You exceeded the maximum number of misses in this condition. Please repeat the set of targets." : "New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
+  let firstLine = showingRepeatMessageCondition ? "You exceeded the maximum number of misses in this condition. Please repeat the set of targets." : order + ": New Set of targets. Select the Start with the " + indication + ("click" === indication ? "🖱" : "⌨") + " button to begin.";
 
   const instructions = [
     firstLine,
+    showingRepeatMessageCondition ? " " : "Answeer the questions about the previous set of targets, then click the Start button to continue.",
     "Feedback : " + feedback ,
     "Selection : " + indication + ("click" === indication ? "🖱" : "⌨")
   ];
@@ -128,8 +129,8 @@ function drawStartButton(canvas, ctx, startButton) {
     ctx.textBaseline = "middle";
     ctx.fillText(`Feedback: None `, indicatorX + 20,  indicatorY);
     ctx.fillText(`Feedback: Green `, indicatorX + 20,  2 * indicatorY);
-    ctx.fillText(`Indication: Click `, indicatorX + 20,  3* indicatorY);
-    ctx.fillText(`Indication: Barspace `, indicatorX + 20,  4 * indicatorY);
+    //ctx.fillText(`Indication: Click `, indicatorX + 20,  3* indicatorY);
+    //ctx.fillText(`Indication: Barspace `, indicatorX + 20,  4 * indicatorY);
 
 }
 
