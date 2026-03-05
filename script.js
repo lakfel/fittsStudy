@@ -64,7 +64,7 @@ const latinSquare8 = [
 ];
 
 
-let record_results = true; // True if results should be recorded
+let record_results = false; // True if results should be recorded
 
 //Experiment variables
 
