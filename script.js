@@ -52,7 +52,7 @@ const latinSquare6 = [
    [5, 0, 4, 1, 3, 2]
  ];
 
-const latinSquare8 = [  
+/*const latinSquare8 = [  
   [0, 1, 7, 2, 6, 3, 5, 4],
   [1, 2, 0, 3, 7, 4, 6, 5],
   [2, 3, 1, 4, 0, 5, 7, 6],
@@ -61,10 +61,15 @@ const latinSquare8 = [
   [5, 6, 4, 7, 3, 0, 2, 1],
   [6, 7, 5, 0, 4, 1, 3, 2],
   [7, 0, 6, 1, 5, 2, 4, 3]
+];*/
+
+const latinSquare8 = [  
+  [0, 1],
+  [1, 0],
 ];
 
 
-let record_results = false; // True if results should be recorded
+let record_results = true; // True if results should be recorded
 
 //Experiment variables
 
@@ -84,7 +89,7 @@ const feedbacks = [
     {feedbackMode : "green",
       buffer: 1
     }, 
-    {feedbackMode : "green",
+   /* {feedbackMode : "green",
       buffer: 1.1
     }, 
     {feedbackMode : "green",
@@ -101,7 +106,7 @@ const feedbacks = [
     },
     {feedbackMode : "green",
       buffer: 0.7
-    }
+    }*/
 ];
 
 const amplitudes = [238, 336, 672]; 
@@ -158,6 +163,7 @@ function resetCurrentTrialData() {
     ID: 0,
     trialIndex: 0,
     targetPosition: { x: -1, y: -1 },
+    previousTargetPosition: { x: -1, y: -1 },
     isFirstTrial: false,
     preFirstTargetPosition: { x: -1, y: -1 },
     indicationsDown: [],
@@ -568,8 +574,9 @@ function nextTrial()
   
   //else {
 
+    currentTrialData.previousTargetPosition = { x: getCurrentTarget().x, y: getCurrentTarget().y };
     state.set.currentTrial++;
-
+    
     if (state.set.currentTrial > numberOfTargets) 
     { // Set finished
 

@@ -22,13 +22,13 @@ def fetch_collection(client, name):
     return pd.DataFrame(rows)
 
 def main():
-    #df_participants = fetch_collection(client, "participants")
+    df_participants = fetch_collection(client, "participants")
     df_trials = fetch_collection(client, "fitts_trials")
     df_pre_trials = fetch_collection(client, "fitts_pre_trials")
 
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    #df_participants.to_parquet(OUT_DIR / f"participants_{ts}.parquet", index=False)
+    df_participants.to_parquet(OUT_DIR / f"participants_{ts}.parquet", index=False)
     df_trials.to_parquet(OUT_DIR / f"trials_{ts}.parquet", index=False)
     df_pre_trials.to_parquet(OUT_DIR / f"pre_trials_{ts}.parquet", index=False)
 

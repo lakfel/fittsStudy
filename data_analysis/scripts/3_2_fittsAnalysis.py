@@ -25,26 +25,24 @@ from statsmodels.stats.multicomp import pairwise_tukeyhsd
 import utils_paths as up
 
 
-def calculate_effective_width(group_data, position_col_x, position_col_y):
+def calculate_effective_width(group_data, position_col_x):
     """
     Calculate effective width (We) for a group of trials with same conditions.
     We = 4.133 * SDx where SDx is the standard deviation of endpoint positions.
     
     Using the bivariate approach: We = 4.133 * sqrt(SD_x^2 + SD_y^2)
     """
-    if len(group_data) < 2:
-        return np.nan
+
     
     std_x = group_data[position_col_x].std()
-    std_y = group_data[position_col_y].std()
     
-    # Bivariate effective width
-    we = 4.133 * np.sqrt(std_x**2 + std_y**2)
+
+    we = 4.133 * std_x
     
     return we
 
 
-def calculate_effective_amplitude(row, start_x=640, start_y=360):
+def calculate_effective_amplitude(row):
     """
     Calculate effective amplitude (Ae) for a trial.
     Ae is the actual distance from start position to endpoint.
@@ -54,32 +52,29 @@ def calculate_effective_amplitude(row, start_x=640, start_y=360):
     # Calculate for each endpoint
     results = {}
     
+    movement_vector = np.array([row['Target_position_x'] - row['Previous_target_position_x'], row['Target_position_y'] - row['Previous_target_position_y']  ])
+
     # For indication down
     if pd.notna(row['Indication_down_x']) and pd.notna(row['Indication_down_y']):
-        ae_down = np.sqrt(
-            (row['Indication_down_x'] - row['Start_position_x'])**2 + 
-            (row['Indication_down_y'] - row['Start_position_y'])**2
-        )
+
+        end_point_vector = np.array([row['Indication_down_x'] - row['Previous_target_position_x'], row['Indication_down_y'] - row['Previous_target_position_y']])
+        ae_down = np.dot(movement_vector, end_point_vector) / np.linalg.norm(movement_vector)
         results['Ae_indication_down'] = ae_down
     else:
         results['Ae_indication_down'] = np.nan
     
     # For indication up
     if pd.notna(row['Indication_up_x']) and pd.notna(row['Indication_up_y']):
-        ae_up = np.sqrt(
-            (row['Indication_up_x'] - row['Start_position_x'])**2 + 
-            (row['Indication_up_y'] - row['Start_position_y'])**2
-        )
+        end_point_vector = np.array([row['Indication_up_x'] - row['Previous_target_position_x'], row['Indication_up_y'] - row['Previous_target_position_y']])
+        ae_up = np.dot(movement_vector, end_point_vector) / np.linalg.norm(movement_vector)
         results['Ae_indication_up'] = ae_up
     else:
         results['Ae_indication_up'] = np.nan
     
     # For reaching time endpoint
     if pd.notna(row['Reaching_pos_x']) and pd.notna(row['Reaching_pos_y']):
-        ae_reaching = np.sqrt(
-            (row['Reaching_pos_x'] - row['Start_position_x'])**2 + 
-            (row['Reaching_pos_y'] - row['Start_position_y'])**2
-        )
+        end_point_vector = np.array([row['Reaching_pos_x'] - row['Previous_target_position_x'], row['Reaching_pos_y'] - row['Previous_target_position_y']])
+        ae_reaching = np.dot(movement_vector, end_point_vector) / np.linalg.norm(movement_vector)
         results['Ae_reaching'] = ae_reaching
     else:
         results['Ae_reaching'] = np.nan
@@ -181,7 +176,7 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
     df_success = filter_outliers_by_indication_up_time(df_success, n_std=3, verbose=verbose)
 
     # Step 1: Calculate effective amplitude for each trial
-    df_success[['Ae_indication_down', 'Ae_indication_up', 'Ae_reaching']] = df_success.apply(
+    df_success[['dx_indication_down', 'dx_indication_up', 'dx_reaching']] = df_success.apply(
         calculate_effective_amplitude, axis=1
         )
 
@@ -191,21 +186,21 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
 
     # Calculate We for indication down positions
     we_down = df_success.groupby(grouping_vars).apply(
-        lambda g: calculate_effective_width(g, 'Indication_down_x', 'Indication_down_y'),
+        lambda g: calculate_effective_width(g, 'dx_indication_down'),
         include_groups=False
     ).reset_index()
     we_down.columns = [*grouping_vars, 'We_indication_down']
 
     # Calculate We for indication up positions
     we_up = df_success.groupby(grouping_vars).apply(
-        lambda g: calculate_effective_width(g, 'Indication_up_x', 'Indication_up_y'),
+        lambda g: calculate_effective_width(g, 'dx_indication_up'),
         include_groups=False
     ).reset_index()
     we_up.columns = [*grouping_vars, 'We_indication_up']
 
     # Calculate We for reaching time positions
     we_reaching = df_success.groupby(grouping_vars).apply(
-        lambda g: calculate_effective_width(g, 'Reaching_pos_x', 'Reaching_pos_y'),
+        lambda g: calculate_effective_width(g, 'dx_reaching'),
         include_groups=False
     ).reset_index()
     we_reaching.columns = [*grouping_vars, 'We_reaching']
@@ -214,6 +209,21 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
     df_success = df_success.merge(we_down, on=grouping_vars, how='left')
     df_success = df_success.merge(we_up, on=grouping_vars, how='left')
     df_success = df_success.merge(we_reaching, on=grouping_vars, how='left')
+
+    # Calculate mean effective amplitude per condition (for throughput calculation)
+    ae_reaching = df_success.groupby(grouping_vars)['dx_reaching'].mean().reset_index()
+    ae_reaching.rename(columns={'dx_reaching': 'Ae_reaching'}, inplace=True)
+    
+    ae_indication_down = df_success.groupby(grouping_vars)['dx_indication_down'].mean().reset_index()
+    ae_indication_down.rename(columns={'dx_indication_down': 'Ae_indication_down'}, inplace=True)
+    
+    ae_indication_up = df_success.groupby(grouping_vars)['dx_indication_up'].mean().reset_index()
+    ae_indication_up.rename(columns={'dx_indication_up': 'Ae_indication_up'}, inplace=True)
+
+    # Merge the mean Ae values back to trials
+    df_success = df_success.merge(ae_reaching, on=grouping_vars, how='left')
+    df_success = df_success.merge(ae_indication_down, on=grouping_vars, how='left')
+    df_success = df_success.merge(ae_indication_up, on=grouping_vars, how='left')
 
     # Step 4: Calculate effective ID (IDe = log2(Ae/We + 1))
     df_success['IDe_indication_down'] = np.log2(
@@ -231,38 +241,52 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
     df_success['MT_indication_down'] = df_success['Indication_down_t'] / 1000.0
     df_success['MT_indication_up'] = df_success['Indication_up_t'] / 1000.0
 
-    # Step 6: Calculate Throughput (TP = IDe / MT) in bits per second
-    # For reaching time - using indication down endpoint (most common in Fitts studies)
-    df_success['TP_reaching'] = df_success['IDe_reaching'] / df_success['MT_reaching']
+    # Step 6: Calculate mean Movement Time per condition
+    # Throughput must be calculated using the mean MT for each condition (ISO 9241-9)
+    mt_reaching_mean = df_success.groupby(grouping_vars)['MT_reaching'].mean().reset_index()
+    mt_reaching_mean.rename(columns={'MT_reaching': 'MT_reaching_mean'}, inplace=True)
+    
+    mt_down_mean = df_success.groupby(grouping_vars)['MT_indication_down'].mean().reset_index()
+    mt_down_mean.rename(columns={'MT_indication_down': 'MT_indication_down_mean'}, inplace=True)
+    
+    mt_up_mean = df_success.groupby(grouping_vars)['MT_indication_up'].mean().reset_index()
+    mt_up_mean.rename(columns={'MT_indication_up': 'MT_indication_up_mean'}, inplace=True)
+    
+    # Merge mean MT back to trials
+    df_success = df_success.merge(mt_reaching_mean, on=grouping_vars, how='left')
+    df_success = df_success.merge(mt_down_mean, on=grouping_vars, how='left')
+    df_success = df_success.merge(mt_up_mean, on=grouping_vars, how='left')
 
-    # For indication down time
-    df_success['TP_indication_down'] = df_success['IDe_indication_down'] / df_success['MT_indication_down']
+    # Step 7: Calculate Throughput (TP = IDe / MT_mean) in bits per second
+    # TP is calculated per condition using mean MT (ISO 9241-9 standard)
+    df_success['TP_reaching'] = df_success['IDe_reaching'] / df_success['MT_reaching_mean']
+    df_success['TP_indication_down'] = df_success['IDe_indication_down'] / df_success['MT_indication_down_mean']
+    df_success['TP_indication_up'] = df_success['IDe_indication_up'] / df_success['MT_indication_up_mean']
 
-    # For indication up time
-    df_success['TP_indication_up'] = df_success['IDe_indication_up'] / df_success['MT_indication_up']
-
-    # Step 7: Add nominal ID for comparison (ID = log2(A/W + 1))
+    # Step 8: Add nominal ID for comparison (ID = log2(A/W + 1))
     df_success['ID_nominal'] = np.log2(df_success['A'] / df_success['W'] + 1)
+    
 
-    # Step 8: Summary statistics
+    # Step 9: Summary statistics
     if verbose:
         print("\n" + "="*80)
         print("FITTS LAW ANALYSIS SUMMARY")
         print("="*80)
+        print("Note: TP is calculated per condition using mean MT (ISO 9241-9 standard)")
 
         print("\n1. REACHING TIME Analysis:")
-        print(f"   Mean MT: {df_success['MT_reaching'].mean():.3f} s (SD: {df_success['MT_reaching'].std():.3f})")
-        print(f"   Mean TP: {df_success['TP_reaching'].mean():.2f} bits/s (SD: {df_success['TP_reaching'].std():.2f})")
+        print(f"   Mean MT (individual trials): {df_success['MT_reaching'].mean():.3f} s (SD: {df_success['MT_reaching'].std():.3f})")
+        print(f"   Mean TP (per condition): {df_success['TP_reaching'].mean():.2f} bits/s (SD across conditions: {df_success['TP_reaching'].std():.2f})")
         print(f"   Mean IDe: {df_success['IDe_reaching'].mean():.2f} (SD: {df_success['IDe_reaching'].std():.2f})")
 
         print("\n2. INDICATION DOWN Analysis:")
-        print(f"   Mean MT: {df_success['MT_indication_down'].mean():.3f} s (SD: {df_success['MT_indication_down'].std():.3f})")
-        print(f"   Mean TP: {df_success['TP_indication_down'].mean():.2f} bits/s (SD: {df_success['TP_indication_down'].std():.2f})")
+        print(f"   Mean MT (individual trials): {df_success['MT_indication_down'].mean():.3f} s (SD: {df_success['MT_indication_down'].std():.3f})")
+        print(f"   Mean TP (per condition): {df_success['TP_indication_down'].mean():.2f} bits/s (SD across conditions: {df_success['TP_indication_down'].std():.2f})")
         print(f"   Mean IDe: {df_success['IDe_indication_down'].mean():.2f} (SD: {df_success['IDe_indication_down'].std():.2f})")
 
         print("\n3. INDICATION UP Analysis:")
-        print(f"   Mean MT: {df_success['MT_indication_up'].mean():.3f} s (SD: {df_success['MT_indication_up'].std():.3f})")
-        print(f"   Mean TP: {df_success['TP_indication_up'].mean():.2f} bits/s (SD: {df_success['TP_indication_up'].std():.2f})")
+        print(f"   Mean MT (individual trials): {df_success['MT_indication_up'].mean():.3f} s (SD: {df_success['MT_indication_up'].std():.3f})")
+        print(f"   Mean TP (per condition): {df_success['TP_indication_up'].mean():.2f} bits/s (SD across conditions: {df_success['TP_indication_up'].std():.2f})")
         print(f"   Mean IDe: {df_success['IDe_indication_up'].mean():.2f} (SD: {df_success['IDe_indication_up'].std():.2f})")
 
         print("\n4. COMPARISON:")
@@ -271,7 +295,29 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
         print(f"   We_reaching (mean): {df_success['We_reaching'].mean():.2f} px")
         print(f"   Ae_reaching (mean): {df_success['Ae_reaching'].mean():.2f} px")
 
-    # Step 9: Aggregate by condition
+        print("\n5. MT AND TP BY INDEX OF DIFFICULTY:")
+        print("\n   REACHING TIME:")
+        mt_tp_reaching = df_success.groupby('feedbackMode').agg({
+            'MT_reaching': ['mean', 'std', 'count'],
+            'TP_reaching': ['first']  # TP is constant per condition
+        }).round(3)
+        print(mt_tp_reaching.to_string())
+        
+        print("\n   INDICATION DOWN:")
+        mt_tp_down = df_success.groupby('feedbackMode').agg({
+            'MT_indication_down': ['mean', 'std', 'count'],
+            'TP_indication_down': ['first']  # TP is constant per condition
+        }).round(3)
+        print(mt_tp_down.to_string())
+        
+        print("\n   INDICATION UP:")
+        mt_tp_up = df_success.groupby('feedbackMode').agg({
+            'MT_indication_up': ['mean', 'std', 'count'],
+            'TP_indication_up': ['first']  # TP is constant per condition
+        }).round(3)
+        print(mt_tp_up.to_string())
+
+    # Step 11: Aggregate by condition
     condition_summary = df_success.groupby(['W', 'A', 'buffer', 'indication', 'feedbackMode']).agg({
         'MT_reaching': ['mean', 'std', 'count'],
         'MT_indication_down': ['mean', 'std'],
@@ -292,7 +338,7 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
     condition_summary.columns = ['_'.join(col).strip('_') for col in condition_summary.columns.values]
 
     if verbose:
-        print("\n5. CONDITIONS ANALYZED:")
+        print("\n6. CONDITIONS ANALYZED:")
         print(f"   Total conditions: {len(condition_summary)}")
         print(f"   W values: {sorted(df_success['W'].unique())}")
         print(f"   A values: {sorted(df_success['A'].unique())}")
@@ -300,7 +346,7 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
         print(f"   Indication modes: {sorted(df_success['indication'].unique())}")
         print(f"   Feedback modes: {sorted(df_success['feedbackMode'].unique())}")
 
-    # Step 10: Save results
+    # Step 11: Save results
     if save_results:
         output_fitts_trials = Path(up.PROCESSED_CSV_DATA) / "fitts_trials_analysis.csv"
         output_fitts_conditions = Path(up.PROCESSED_CSV_DATA) / "fitts_conditions_summary.csv"
@@ -330,7 +376,7 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
             print(f"  - {output_fitts_conditions}")
             print(f"{'='*80}")
 
-    # Step 11: Quick regression check (Fitts' Law: MT = a + b*ID)
+    # Step 12: Quick regression check (Fitts' Law: MT = a + b*ID)
     if verbose:
         print("\n" + "="*80)
         print("FITTS LAW REGRESSION (MT ~ ID)")
@@ -963,13 +1009,13 @@ if __name__ == "__main__":
     df_fitts, df_conditions = calculate_fitts_law_metrics(save_results=True, verbose=True)
     
     # Perform statistical analysis (ANOVA and post-hoc tests)
-    stats_results = perform_statistical_analysis(df_fitts, save_results=True, verbose=True)
+    #stats_results = perform_statistical_analysis(df_fitts, save_results=True, verbose=True)
     
     # Create plots by condition (one plot per condition combination)
-    figs1 = plot_fitts_law_by_conditions(df_fitts, save_plots=True)
+    #figs1 = plot_fitts_law_by_conditions(df_fitts, save_plots=True)
     
     # Create plots by time type (one plot per time type with all conditions)
-    figs2 = plot_fitts_law_by_time_type(df_fitts, save_plots=True)
+    #figs2 = plot_fitts_law_by_time_type(df_fitts, save_plots=True)
     
     # Close all figures to free memory
-    plt.close('all')
+    #plt.close('all')

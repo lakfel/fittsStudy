@@ -26,12 +26,18 @@ df_trials = pd.read_parquet(trials_path)
 pretrials_path = sorted(RAW.glob("pre_trials_*.parquet"))[-1]
 df_pre_trials = pd.read_parquet(pretrials_path)
 
+
+OUT_DIR = Path(up.PROCESSED_CSV_DATA)
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
 # explode cursorPositionsInterval -> positions table
 pos_rows = []
 
 summarized_trials = []
 
 success_rates = dict() 
+
+print(f"Processing trials: {len(df_trials)}")
 
 for _, r in df_trials.iterrows():
     key = f"{r.get('participantId')}-{r.get('buffer')}-{r.get('indication')}-{r.get('feedbackMode')}-{r.get('W')}-{r.get('A')}"
@@ -59,6 +65,8 @@ for _, r in df_trials.iterrows():
         "A": r.get("A"),
         "Target_position_x": r.get("targetPosition", {}).get("x"),
         "Target_position_y": r.get("targetPosition", {}).get("y"),
+        "Previous_target_position_x": r.get("previousTargetPosition", {}).get("x"),
+        "Previous_target_position_y": r.get("previousTargetPosition", {}).get("y"),
         "Indication_down_x": indicationDown[-1].get("x") if len(indicationDown) > 0 else None,
         "Indication_down_y": indicationDown[-1].get("y") if len(indicationDown) > 0 else None,
         "Indication_down_t": indicationDown[-1].get("time") if len(indicationDown) > 0 else None,
