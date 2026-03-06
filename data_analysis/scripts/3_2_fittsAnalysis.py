@@ -29,8 +29,7 @@ def calculate_effective_width(group_data, position_col_x):
     """
     Calculate effective width (We) for a group of trials with same conditions.
     We = 4.133 * SDx where SDx is the standard deviation of endpoint positions.
-    
-    Using the bivariate approach: We = 4.133 * sqrt(SD_x^2 + SD_y^2)
+
     """
 
     
@@ -165,7 +164,8 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
     df_trials = df_trials[~df_trials['participantId'].isin(excluded_participants)]
     
     # Filter successful trials only for Fitts law analysis
-    df_success = df_trials[df_trials['success'] == True].copy()
+    #df_success = df_trials[df_trials['success'] == True].copy()
+    df_success = df_trials.copy()
     
     if verbose:
         print(f"\nTotal trials (after filtering participants): {len(df_trials)}")
@@ -297,23 +297,23 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
 
         print("\n5. MT AND TP BY INDEX OF DIFFICULTY:")
         print("\n   REACHING TIME:")
-        mt_tp_reaching = df_success.groupby('feedbackMode').agg({
+        mt_tp_reaching = df_success.groupby(['feedbackMode', 'buffer']).agg({
             'MT_reaching': ['mean', 'std', 'count'],
-            'TP_reaching': ['first']  # TP is constant per condition
+            'TP_reaching':  ['mean', 'std']
         }).round(3)
         print(mt_tp_reaching.to_string())
         
         print("\n   INDICATION DOWN:")
-        mt_tp_down = df_success.groupby('feedbackMode').agg({
+        mt_tp_down = df_success.groupby(['feedbackMode', 'buffer']).agg({
             'MT_indication_down': ['mean', 'std', 'count'],
-            'TP_indication_down': ['first']  # TP is constant per condition
+            'TP_indication_down':  ['mean', 'std']
         }).round(3)
         print(mt_tp_down.to_string())
         
         print("\n   INDICATION UP:")
-        mt_tp_up = df_success.groupby('feedbackMode').agg({
+        mt_tp_up = df_success.groupby(['feedbackMode', 'buffer']).agg({
             'MT_indication_up': ['mean', 'std', 'count'],
-            'TP_indication_up': ['first']  # TP is constant per condition
+            'TP_indication_up':  ['mean', 'std']
         }).round(3)
         print(mt_tp_up.to_string())
 
@@ -383,10 +383,10 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
         print("="*80)
 
         # For reaching time
-        valid_reaching = df_success[['IDe_indication_down', 'MT_reaching']].dropna()
+        valid_reaching = df_success[['IDe_reaching', 'MT_reaching']].dropna()
         if len(valid_reaching) > 0:
             slope_r, intercept_r, r_value_r, p_value_r, std_err_r = stats.linregress(
-                valid_reaching['IDe_indication_down'], 
+                valid_reaching['IDe_reaching'], 
                 valid_reaching['MT_reaching']
             )
             print(f"\n1. REACHING TIME: MT = {intercept_r:.3f} + {slope_r:.3f} * IDe")

@@ -693,7 +693,7 @@ function generateRingTargets(A, W) {
 
 
 function getCurrentTargetIndex() {
-  return (state.set.currentTrial + randomStart) * 5 % 9; // Alterna entre los targets del par
+  return (state.set.currentTrial + randomStart) * ((numberOfTargets+1)/2)  % numberOfTargets; // Alterna entre los targets del par
 }
 
 function getCurrentTarget() {
