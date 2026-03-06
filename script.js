@@ -110,7 +110,7 @@ const feedbacks = [
 ];
 
 const amplitudes = [238, 336, 672]; 
-const widths = [21, 42, 63, 84];  
+const widths = [21, 42, 84];  
 
 /*
 const amplitudes = [336]; 
