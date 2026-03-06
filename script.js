@@ -52,7 +52,7 @@ const latinSquare6 = [
    [5, 0, 4, 1, 3, 2]
  ];
 
-/*const latinSquare8 = [  
+const latinSquare8 = [  
   [0, 1, 7, 2, 6, 3, 5, 4],
   [1, 2, 0, 3, 7, 4, 6, 5],
   [2, 3, 1, 4, 0, 5, 7, 6],
@@ -61,20 +61,20 @@ const latinSquare6 = [
   [5, 6, 4, 7, 3, 0, 2, 1],
   [6, 7, 5, 0, 4, 1, 3, 2],
   [7, 0, 6, 1, 5, 2, 4, 3]
-];*/
-
-const latinSquare8 = [  
-  [0, 1],
-  [1, 0],
 ];
 
+/*const latinSquare8 = [  
+  [0, 1],
+  [1, 0],
+];*/
 
-let record_results = true; // True if results should be recorded
+
+let record_results = false; // True if results should be recorded
 
 //Experiment variables
 
 
-const numberOfTargets = 9; // Number of targets in the ring
+const numberOfTargets = 11; // Number of targets in the ring
 const maxErrorRatePerBlock = 0.40; // Maximum error rate per block before repeating
 const maxErrorRatePerCondition = 0.30; // Maximum error rate per condition before repeating the condition
 
@@ -89,7 +89,7 @@ const feedbacks = [
     {feedbackMode : "green",
       buffer: 1
     }, 
-   /* {feedbackMode : "green",
+    {feedbackMode : "green",
       buffer: 1.1
     }, 
     {feedbackMode : "green",
@@ -106,16 +106,16 @@ const feedbacks = [
     },
     {feedbackMode : "green",
       buffer: 0.7
-    }*/
+    }
 ];
 
 const amplitudes = [238, 336, 672]; 
-const widths = [21, 42, 84];  
+const widths = [21, 42, 63, 84];  
 
-
-//const amplitudes = [238]; 
-//const widths = [21, 42];      
-
+/*
+const amplitudes = [336]; 
+const widths = [84];      
+*/
 
 let trackingStartTime = null;
 
