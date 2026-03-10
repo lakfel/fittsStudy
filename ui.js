@@ -83,7 +83,9 @@ function drawStartButton(canvas, ctx, startButton) {
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  const instructions = [
+
+
+  /*const instructions = [
     "Welcome to this experiment to understand How People Select On-Screen Targets!",
     "",
     "Your task is to reach the targets as quickly and accurately as possible using the pointer.",
@@ -99,6 +101,26 @@ function drawStartButton(canvas, ctx, startButton) {
     "",
     "Make sure the browser zoom is set to 100%.",
   ];
+*/
+
+  const instructions = [
+    "Your task is to move the cursor toward the indicated targets and select them by clicking",
+    "the mouse. You will be presented with sets of circular targets that vary in diameter and",
+    "distance from each other. Try to select them as QUICKLY and ACCURATELY as possible.",
+    "",
+    "If you click the wrong target, it will turn red to notify you. If you make too many errors,",
+    "the system will ask you to repeat that set of targets",
+    "",
+    "You will perform this task under eight different conditions. In seven of them, the target",
+    "will display a green highlighting effect when the cursor passes over it. In one condition,",
+    "no highlighting effect will be shown when you reach the target.",
+    "",
+    "Each condition begins when you press the Start button and ends when the next screen",
+    "with the Start button appears. When the Start screen appears, you may take a short",
+    "break. After each condition, when the Start screen is shown again, please answer the",
+    "question on the following screen about the perceived difficulty of the task"
+  ];
+
   let y = startButton.y + startButton.radius + 30;
   for (let line of instructions) {
     ctx.fillText(line, canvas.width / 2, y);
