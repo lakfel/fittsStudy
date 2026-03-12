@@ -161,10 +161,10 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
     excluded_participants = up.get_excluded_participants_by_error_rate()
     
     # Filter out excluded participants
-    df_trials = df_trials[~df_trials['participantId'].isin(excluded_participants)]
+    #df_trials = df_trials[~df_trials['participantId'].isin(excluded_participants)]
     
     # Filter successful trials only for Fitts law analysis
-    #df_success = df_trials[df_trials['success'] == True].copy()
+    df_success = df_trials[df_trials['success'] == True].copy()
     df_success = df_trials.copy()
     
     if verbose:
@@ -278,16 +278,23 @@ def calculate_fitts_law_metrics(save_results=True, verbose=True):
         print(f"   Mean MT (individual trials): {df_success['MT_reaching'].mean():.3f} s (SD: {df_success['MT_reaching'].std():.3f})")
         print(f"   Mean TP (per condition): {df_success['TP_reaching'].mean():.2f} bits/s (SD across conditions: {df_success['TP_reaching'].std():.2f})")
         print(f"   Mean IDe: {df_success['IDe_reaching'].mean():.2f} (SD: {df_success['IDe_reaching'].std():.2f})")
+        print(f"   Mean We: {df_success['We_reaching'].mean():.2f} px (SD: {df_success['We_reaching'].std():.2f})")
+        print(f"   Mean Ae: {df_success['Ae_reaching'].mean():.2f} px (SD: {df_success['Ae_reaching'].std():.2f})")
 
         print("\n2. INDICATION DOWN Analysis:")
         print(f"   Mean MT (individual trials): {df_success['MT_indication_down'].mean():.3f} s (SD: {df_success['MT_indication_down'].std():.3f})")
         print(f"   Mean TP (per condition): {df_success['TP_indication_down'].mean():.2f} bits/s (SD across conditions: {df_success['TP_indication_down'].std():.2f})")
         print(f"   Mean IDe: {df_success['IDe_indication_down'].mean():.2f} (SD: {df_success['IDe_indication_down'].std():.2f})")
+        print(f"   Mean We: {df_success['We_indication_down'].mean():.2f} px (SD: {df_success['We_indication_down'].std():.2f})")
+        print(f"   Mean Ae: {df_success['Ae_indication_down'].mean():.2f} px (SD: {df_success['Ae_indication_down'].std():.2f})")
 
         print("\n3. INDICATION UP Analysis:")
         print(f"   Mean MT (individual trials): {df_success['MT_indication_up'].mean():.3f} s (SD: {df_success['MT_indication_up'].std():.3f})")
         print(f"   Mean TP (per condition): {df_success['TP_indication_up'].mean():.2f} bits/s (SD across conditions: {df_success['TP_indication_up'].std():.2f})")
         print(f"   Mean IDe: {df_success['IDe_indication_up'].mean():.2f} (SD: {df_success['IDe_indication_up'].std():.2f})")
+        print(f"   Mean We: {df_success['We_indication_up'].mean():.2f} px (SD: {df_success['We_indication_up'].std():.2f})")
+        print(f"   Mean Ae: {df_success['Ae_indication_up'].mean():.2f} px (SD: {df_success['Ae_indication_up'].std():.2f})")
+
 
         print("\n4. COMPARISON:")
         print(f"   Nominal ID (mean): {df_success['ID_nominal'].mean():.2f}")
